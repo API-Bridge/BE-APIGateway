@@ -1,0 +1,208 @@
+spring:
+  application:
+    name: apigateway-svc
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  # JPA 설정 (Amazon Corretto 17 최적화)
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:validate}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        jdbc.batch_versioned_data: true
+    show-sql: false
+    open-in-view: false
+
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${SERVICE_NAME:apigateway-svc}-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        max.poll.records: 500
+        enable.auto.commit: false
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        acks: all
+        retries: 3
+
+  # Redis 설정  
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    timeout: 2000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-idle: 8
+        min-idle: 0
+
+  # 데이터베이스 설정
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/apigatewaysvc?useSSL=false&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 20000
+
+# Auth0 설정
+auth0:
+  issuerUri: ${AUTH0_ISSUER_URI:https://dev-your-domain.auth0.com/}
+  audience: ${AUTH0_AUDIENCE:https://api.dev.yourservice.com}
+
+# AWS 설정
+aws:
+  region: ${AWS_REGION:ap-northeast-2}
+  s3:
+    bucket: ${S3_BUCKET_NAME:your-bucket-name}
+  secretsmanager:
+    region: ${AWS_REGION:ap-northeast-2}
+
+# Circuit Breaker 설정 (Resilience4j)
+resilience4j:
+  circuitbreaker:
+    instances:
+      default:
+        slidingWindowSize: 100
+        permittedNumberOfCallsInHalfOpenState: 10
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 20
+        waitDurationInOpenState: 60s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 80
+        slowCallDurationThreshold: 3s
+  retry:
+    instances:
+      default:
+        maxAttempts: 3
+        waitDuration: 1s
+        exponentialBackoffMultiplier: 2
+  bulkhead:
+    instances:
+      default:
+        maxConcurrentCalls: 10
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    org.example.apigateway: DEBUG
+    org.springframework.kafka: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+
+management:
+  # 웹 엔드포인트 노출 설정
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,loggers
+      base-path: /actuator
+
+  # 개별 엔드포인트 상세 설정
+  endpoint:
+    health:
+      show-details: when_authorized
+
+  # 프로메테우스 익스포터 설정
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+  # 모든 메트릭에 적용될 공통 태그 설정 (여기 위치가 올바릅니다)
+  metrics:
+    tags:
+      service: ai-svc
+      version: ${BUILD_VERSION:dev}
+
+  # 분산 트레이싱 샘플링 설정
+  tracing:
+    sampling:
+      probability: 1.0
+
+# 서버 설정
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /api/v1
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    accept-count: 100
+    max-connections: 8192
+
+# OpenAPI 설정
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+---
+# 개발 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: dev
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  kafka:
+    consumer:
+      group-id: ai-svc-dev-group
+
+logging:
+  level:
+    org.example.apigateway: DEBUG
+    org.springframework.security: DEBUG
+
+---
+# 프로덕션 환경 설정
+spring:
+  config:
+    activate:
+      on-profile: prod
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+logging:
+  level:
+    org.example.apigateway: INFO
+    org.springframework.security: WARN
+  file:
+    name: logs/ai-svc.log
+
+management:
+  endpoint:
+    health:
+      show-details: never
