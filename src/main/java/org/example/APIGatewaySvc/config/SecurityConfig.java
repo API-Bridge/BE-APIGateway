@@ -43,16 +43,24 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/", "/home", "/logout").permitAll()
+                .requestMatchers("/actuator/**", "/h2-console/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers("/api/v1/health").permitAll()
+                .requestMatchers("/api/public").permitAll()
+                .requestMatchers("/api/me").authenticated()
                 .anyRequest().authenticated()
+            )
+            .oauth2Login(oauth2Login -> oauth2Login
+                .loginPage("/oauth2/authorization/auth0") // Auth0 로그인 페이지로 리다이렉트
             )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt
                     .decoder(jwtDecoder())
                     .jwtAuthenticationConverter(jwtAuthenticationConverter())
                 )
+            )
+            .headers(headers -> headers
+                .frameOptions().sameOrigin() // H2 콘솔을 위해 필요
             );
 
         return http.build();

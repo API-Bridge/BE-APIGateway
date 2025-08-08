@@ -1,6 +1,7 @@
 package org.example.APIGatewaySvc;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
@@ -13,6 +14,9 @@ import org.springframework.boot.test.context.SpringBootTest;
  * - 애플리케이션 시작 가능 여부 검증
  */
 @SpringBootTest
+@TestPropertySource(properties = {
+    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration"
+})
 class APIGatewaySvcApplicationTests {
 
     /**

@@ -48,12 +48,17 @@ dependencies {
     // Security & OAuth2 (Auth0 JWT 토큰 검증)
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'com.auth0:java-jwt:4.2.1'
-    
+
     // Documentation (Swagger/OpenAPI)
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
     
+    // Environment variables support
+    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+    
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     
     // TestContainers (Spring Boot 3.1+ @ServiceConnection 지원)
@@ -61,7 +66,6 @@ dependencies {
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:mysql'
     testImplementation 'org.testcontainers:kafka'
-    testImplementation 'org.testcontainers:redis'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
