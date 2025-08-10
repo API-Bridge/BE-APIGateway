@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.util.ProblemDetailsUtilTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2025-08-10T15:37:59.334Z" hostname="SEOKYEEUN" time="0.375">
+  <properties/>
+  <testcase name="503 Service Unavailable Problem Details 응답이 올바르게 생성되어야 함" classname="org.example.APIGatewaySvc.util.ProblemDetailsUtilTest" time="0.306"/>
+  <testcase name="이메일 주소가 포함된 에러 메시지에서 민감정보가 마스킹되어야 함" classname="org.example.APIGatewaySvc.util.ProblemDetailsUtilTest" time="0.009"/>
+  <testcase name="빈 에러 메시지는 기본 메시지로 대체되어야 함" classname="org.example.APIGatewaySvc.util.ProblemDetailsUtilTest" time="0.005"/>
+  <testcase name="401 Unauthorized Problem Details 응답이 올바르게 생성되어야 함" classname="org.example.APIGatewaySvc.util.ProblemDetailsUtilTest" time="0.016"/>
+  <testcase name="403 Forbidden Problem Details 응답이 올바르게 생성되어야 함" classname="org.example.APIGatewaySvc.util.ProblemDetailsUtilTest" time="0.003"/>
+  <testcase name="null 에러 메시지는 기본 메시지로 대체되어야 함" classname="org.example.APIGatewaySvc.util.ProblemDetailsUtilTest" time="0.002"/>
+  <testcase name="JWT 토큰이 포함된 에러 메시지에서 민감정보가 마스킹되어야 함" classname="org.example.APIGatewaySvc.util.ProblemDetailsUtilTest" time="0.005"/>
+  <testcase name="과도하게 긴 에러 메시지는 적절히 잘려야 함" classname="org.example.APIGatewaySvc.util.ProblemDetailsUtilTest" time="0.017"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

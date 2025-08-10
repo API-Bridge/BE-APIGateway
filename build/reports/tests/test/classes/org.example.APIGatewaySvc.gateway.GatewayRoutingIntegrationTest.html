@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - GatewayRoutingIntegrationTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>GatewayRoutingIntegrationTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/org.example.APIGatewaySvc.gateway.html">org.example.APIGatewaySvc.gateway</a> &gt; GatewayRoutingIntegrationTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">11</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">11</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.002s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox skipped" id="successRate">
+<div class="percent">-</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a href="#">Ignored tests</a>
+</li>
+<li>
+<a href="#">Tests</a>
+</li>
+</ul>
+<div class="tab">
+<h2>Ignored tests</h2>
+<div class="test">
+<a name="shouldApplyRateLimiting()"></a>
+<h3 class="skipped">Rate Limiting이 올바르게 적용되어야 함</h3>
+</div>
+<div class="test">
+<a name="shouldHaveIndependentRateLimitsPerUser()"></a>
+<h3 class="skipped">서로 다른 사용자는 독립적인 Rate Limit을 가져야 함</h3>
+</div>
+<div class="test">
+<a name="shouldIncludeGatewayTimestamp()"></a>
+<h3 class="skipped">Gateway 타임스탬프 헤더가 모든 응답에 포함되어야 함</h3>
+</div>
+<div class="test">
+<a name="shouldRemoveCookieHeaders()"></a>
+<h3 class="skipped">Cookie 헤더가 제거되어야 함 (보안)</h3>
+</div>
+<div class="test">
+<a name="shouldReturn401WithoutJWTForProtectedRoutes()"></a>
+<h3 class="skipped">JWT 토큰 없이 보호된 경로 접근 시 401 에러 반환</h3>
+</div>
+<div class="test">
+<a name="shouldReturn404ForNonExistentRoute()"></a>
+<h3 class="skipped">존재하지 않는 라우트는 404 에러를 반환해야 함</h3>
+</div>
+<div class="test">
+<a name="shouldRouteToAIFeatureService()"></a>
+<h3 class="skipped">AI Feature Service 라우팅이 올바르게 동작해야 함</h3>
+</div>
+<div class="test">
+<a name="shouldRouteToAPIManagementService()"></a>
+<h3 class="skipped">API Management Service 라우팅이 올바르게 동작해야 함</h3>
+</div>
+<div class="test">
+<a name="shouldRouteToCustomAPIManagementService()"></a>
+<h3 class="skipped">Custom API Management Service 라우팅이 올바르게 동작해야 함</h3>
+</div>
+<div class="test">
+<a name="shouldRouteToSystemManagementService()"></a>
+<h3 class="skipped">System Management Service 라우팅이 올바르게 동작해야 함</h3>
+</div>
+<div class="test">
+<a name="shouldRouteToUserService()"></a>
+<h3 class="skipped">User Service 라우팅이 올바르게 동작해야 함</h3>
+</div>
+</div>
+<div class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Method name</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="skipped">Rate Limiting이 올바르게 적용되어야 함</td>
+<td class="skipped">shouldApplyRateLimiting()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+<tr>
+<td class="skipped">서로 다른 사용자는 독립적인 Rate Limit을 가져야 함</td>
+<td class="skipped">shouldHaveIndependentRateLimitsPerUser()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+<tr>
+<td class="skipped">Gateway 타임스탬프 헤더가 모든 응답에 포함되어야 함</td>
+<td class="skipped">shouldIncludeGatewayTimestamp()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+<tr>
+<td class="skipped">Cookie 헤더가 제거되어야 함 (보안)</td>
+<td class="skipped">shouldRemoveCookieHeaders()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+<tr>
+<td class="skipped">JWT 토큰 없이 보호된 경로 접근 시 401 에러 반환</td>
+<td class="skipped">shouldReturn401WithoutJWTForProtectedRoutes()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+<tr>
+<td class="skipped">존재하지 않는 라우트는 404 에러를 반환해야 함</td>
+<td class="skipped">shouldReturn404ForNonExistentRoute()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+<tr>
+<td class="skipped">AI Feature Service 라우팅이 올바르게 동작해야 함</td>
+<td class="skipped">shouldRouteToAIFeatureService()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+<tr>
+<td class="skipped">API Management Service 라우팅이 올바르게 동작해야 함</td>
+<td class="skipped">shouldRouteToAPIManagementService()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+<tr>
+<td class="skipped">Custom API Management Service 라우팅이 올바르게 동작해야 함</td>
+<td class="skipped">shouldRouteToCustomAPIManagementService()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+<tr>
+<td class="skipped">System Management Service 라우팅이 올바르게 동작해야 함</td>
+<td class="skipped">shouldRouteToSystemManagementService()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+<tr>
+<td class="skipped">User Service 라우팅이 올바르게 동작해야 함</td>
+<td class="skipped">shouldRouteToUserService()</td>
+<td class="skipped">-</td>
+<td class="skipped">ignored</td>
+</tr>
+</table>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="https://www.gradle.org">Gradle 8.14.3</a> at 2025. 8. 11. 오전 12:37:59</p>
+</div>
+</div>
+</body>
+</html>

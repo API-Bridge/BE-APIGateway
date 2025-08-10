@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.config.KeyResolverConfigTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2025-08-10T15:37:55.242Z" hostname="SEOKYEEUN" time="3.59">
+  <properties/>
+  <testcase name="X-Forwarded-For 헤더에서 클라이언트 IP를 정확히 추출해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="1.086"/>
+  <testcase name="인증되지 않은 사용자의 경우 IP 기반 키를 반환해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.003"/>
+  <testcase name="IP Key Resolver는 항상 IP 기반 키를 반환해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="2.377"/>
+  <testcase name="빈 JWT subject는 IP 기반 키로 폴백되어야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.072"/>
+  <testcase name="X-Real-IP 헤더에서 클라이언트 IP를 추출해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.003"/>
+  <testcase name="잘못된 형식의 IP 주소는 unknown으로 처리되어야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.004"/>
+  <testcase name="사설망 IP는 필터링되고 RemoteAddress를 사용해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.004"/>
+  <testcase name="CF-Connecting-IP 헤더에서 클라이언트 IP를 추출해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.004"/>
+  <testcase name="인증된 사용자의 경우 사용자 ID 기반 키를 반환해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.016"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

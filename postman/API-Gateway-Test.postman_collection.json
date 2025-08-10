@@ -1,0 +1,317 @@
+{
+  "info": {
+    "name": "API Gateway Test Collection",
+    "description": "Spring Cloud Gateway API 테스트를 위한 Postman 컬렉션",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "description": "API Gateway 기본 URL"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "description": "JWT 인증 토큰 (자동으로 설정됨)"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. JWT 토큰 생성",
+      "item": [
+        {
+          "name": "테스트용 JWT 토큰들 조회",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 응답이 성공적일 때 valid 토큰을 환경변수에 저장",
+                  "if (pm.response.code === 200) {",
+                  "    const responseJson = pm.response.json();",
+                  "    if (responseJson.tokens && responseJson.tokens.valid) {",
+                  "        pm.collectionVariables.set('jwt_token', responseJson.tokens.valid);",
+                  "        console.log('JWT 토큰이 자동으로 설정되었습니다');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/jwt/tokens",
+              "host": ["{{base_url}}"],
+              "path": ["public", "jwt", "tokens"]
+            },
+            "description": "개발/테스트용 JWT 토큰들을 조회하고 자동으로 컬렉션 변수에 저장합니다."
+          }
+        },
+        {
+          "name": "커스텀 JWT 토큰 생성",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"test-user-custom\",\n  \"permissions\": [\"read:users\", \"write:users\", \"admin:system\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/public/jwt/generate",
+              "host": ["{{base_url}}"],
+              "path": ["public", "jwt", "generate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. 기본 테스트 (인증 불필요)",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/test/health",
+              "host": ["{{base_url}}"],
+              "path": ["test", "health"]
+            }
+          }
+        },
+        {
+          "name": "Actuator Health",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/health",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "health"]
+            }
+          }
+        },
+        {
+          "name": "Gateway Routes 확인",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/actuator/gateway/routes",
+              "host": ["{{base_url}}"],
+              "path": ["actuator", "gateway", "routes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. JWT 인증 테스트",
+      "item": [
+        {
+          "name": "보호된 엔드포인트 (인증 필요)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/test/protected",
+              "host": ["{{base_url}}"],
+              "path": ["test", "protected"]
+            },
+            "description": "JWT 토큰이 필요한 보호된 엔드포인트입니다."
+          }
+        },
+        {
+          "name": "사용자 정보 조회",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/test/user-info",
+              "host": ["{{base_url}}"],
+              "path": ["test", "user-info"]
+            }
+          }
+        },
+        {
+          "name": "인증 없이 보호된 경로 접근 (401 에러)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/test/protected",
+              "host": ["{{base_url}}"],
+              "path": ["test", "protected"]
+            },
+            "description": "JWT 토큰 없이 보호된 엔드포인트에 접근하여 401 에러를 확인합니다."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Rate Limiting 테스트",
+      "item": [
+        {
+          "name": "Rate Limit 테스트 (1회차)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/test/rate-limit-test",
+              "host": ["{{base_url}}"],
+              "path": ["test", "rate-limit-test"]
+            }
+          }
+        },
+        {
+          "name": "Rate Limit 테스트 (연속 호출)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/test/rate-limit-test",
+              "host": ["{{base_url}}"],
+              "path": ["test", "rate-limit-test"]
+            },
+            "description": "이 요청을 빠르게 여러 번 실행하여 429 에러를 확인하세요."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Gateway 라우팅 테스트",
+      "item": [
+        {
+          "name": "User Service 라우팅 테스트",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "User Service로 라우팅되는 요청입니다 (개발환경에서는 httpbin.org로 라우팅)"
+          }
+        },
+        {
+          "name": "API Management Service 라우팅 테스트",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/apimgmt/apis",
+              "host": ["{{base_url}}"],
+              "path": ["api", "apimgmt", "apis"]
+            }
+          }
+        },
+        {
+          "name": "AI Feature Service 라우팅 테스트",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/aifeature/chat",
+              "host": ["{{base_url}}"],
+              "path": ["api", "aifeature", "chat"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. 에러 핸들링 테스트",
+      "item": [
+        {
+          "name": "존재하지 않는 경로 (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/nonexistent/path",
+              "host": ["{{base_url}}"],
+              "path": ["nonexistent", "path"]
+            }
+          }
+        },
+        {
+          "name": "서버 에러 테스트 (500)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/test/error-test",
+              "host": ["{{base_url}}"],
+              "path": ["test", "error-test"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. POST 요청 테스트",
+      "item": [
+        {
+          "name": "Echo 테스트",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hello, API Gateway!\",\n  \"timestamp\": \"{{$timestamp}}\",\n  \"data\": {\n    \"key1\": \"value1\",\n    \"key2\": 123\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/test/echo",
+              "host": ["{{base_url}}"],
+              "path": ["test", "echo"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
