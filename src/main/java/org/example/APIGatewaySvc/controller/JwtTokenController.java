@@ -28,11 +28,44 @@ public class JwtTokenController {
 
     @GetMapping("/tokens")
     @Operation(
-        summary = "테스트용 JWT 토큰들 조회", 
-        description = "다양한 시나리오를 위한 미리 생성된 JWT 토큰들을 반환합니다."
+        summary = "테스트용 JWT 토큰 생성기", 
+        description = """
+            **개발/테스트를 위한 JWT 토큰 생성 엔드포인트**
+            
+            **목적**: 실제 Auth0 없이 JWT 토큰 인증 로직을 테스트
+            
+            **접근**: 인증 불필요 (공개 엔드포인트)
+            
+            **제공 토큰 유형**:
+            - **valid**: 정상적인 JWT 토큰 (일반 사용자 권한)
+            - **admin**: 관리자 권한을 가진 JWT 토큰 
+            - **readonly**: 읽기 권한만 있는 JWT 토큰
+            - **expired**: 만료된 JWT 토큰 (401 에러 테스트용)
+            - **invalid_audience**: 잘못된 오디언스 (401 에러 테스트용)
+            
+            **사용 방법**:
+            1. 이 엔드포인트를 호출하여 토큰 획득
+            2. 원하는 시나리오의 토큰을 복사
+            3. 다른 API 호출 시 Authorization 헤더에 `Bearer {token}` 형식으로 사용
+            
+            ⚠️ **중요 주의사항**:
+            - 오직 개발/테스트 목적으로만 사용
+            - 운영 환경에서는 자동 비활성화됨
+            - 실제 운영에서는 Auth0에서 발급한 토큰 사용 필수
+            
+            **활용 예시**:
+            ```bash
+            # 1. 토큰 획득
+            curl http://localhost:8080/public/jwt/tokens
+            
+            # 2. 토큰을 사용한 API 호출
+            curl -H "Authorization: Bearer {valid-token}" \
+                 http://localhost:8080/test/protected
+            ```
+            """
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "토큰 생성 성공")
+        @ApiResponse(responseCode = "200", description = "테스트용 JWT 토큰들이 성공적으로 생성되었습니다")
     })
     public Mono<ResponseEntity<Map<String, Object>>> getTestTokens() {
         Map<String, String> tokens = JwtTestUtil.getTestTokens();

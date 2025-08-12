@@ -20,7 +20,7 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">44</div>
+<div class="counter">18</div>
 <p>tests</p>
 </div>
 </td>
@@ -32,13 +32,13 @@
 </td>
 <td>
 <div class="infoBox" id="ignored">
-<div class="counter">21</div>
+<div class="counter">0</div>
 <p>ignored</p>
 </div>
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">4.344s</div>
+<div class="counter">4.602s</div>
 <p>duration</p>
 </div>
 </td>
@@ -47,7 +47,7 @@
 </div>
 </td>
 <td>
-<div class="infoBox skipped" id="successRate">
+<div class="infoBox success" id="successRate">
 <div class="percent">100%</div>
 <p>successful</p>
 </div>
@@ -58,104 +58,12 @@
 <div class="tab-container">
 <ul class="tabLinks">
 <li>
-<a href="#">Ignored tests</a>
-</li>
-<li>
 <a href="#">Packages</a>
 </li>
 <li>
 <a href="#">Classes</a>
 </li>
 </ul>
-<div class="tab">
-<h2>Ignored tests</h2>
-<ul class="linkList">
-<li>
-<a href="classes/org.example.APIGatewaySvc.APIGatewaySvcApplicationTests.html">APIGatewaySvcApplicationTests</a>.
-<a href="classes/org.example.APIGatewaySvc.APIGatewaySvcApplicationTests.html#contextLoads()">contextLoads()</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldApplyRateLimiting()">Rate Limiting이 올바르게 적용되어야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldHaveIndependentRateLimitsPerUser()">서로 다른 사용자는 독립적인 Rate Limit을 가져야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldIncludeGatewayTimestamp()">Gateway 타임스탬프 헤더가 모든 응답에 포함되어야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRemoveCookieHeaders()">Cookie 헤더가 제거되어야 함 (보안)</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldReturn401WithoutJWTForProtectedRoutes()">JWT 토큰 없이 보호된 경로 접근 시 401 에러 반환</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldReturn404ForNonExistentRoute()">존재하지 않는 라우트는 404 에러를 반환해야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRouteToAIFeatureService()">AI Feature Service 라우팅이 올바르게 동작해야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRouteToAPIManagementService()">API Management Service 라우팅이 올바르게 동작해야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRouteToCustomAPIManagementService()">Custom API Management Service 라우팅이 올바르게 동작해야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRouteToSystemManagementService()">System Management Service 라우팅이 올바르게 동작해야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRouteToUserService()">User Service 라우팅이 올바르게 동작해야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#corsShouldBeConfiguredCorrectly()">CORS 설정이 올바르게 적용되어야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#expiredJWTShouldReturn401()">만료된 JWT 토큰은 401 에러 반환</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#invalidAudienceJWTShouldReturn401()">잘못된 오디언스의 JWT 토큰은 401 에러 반환</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#malformedJWTShouldReturn401()">잘못된 형식의 JWT 토큰은 401 에러 반환</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#protectedEndpointsShouldReturn401WithoutJWT()">보호된 경로는 JWT 토큰 없이 접근 시 401 에러 반환</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#publicEndpointsShouldBeAccessibleWithoutAuthentication()">공개 경로는 인증 없이 접근 가능해야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#requestIdShouldBeIncludedInAllResponses()">Request ID가 모든 응답에 포함되어야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#sensitiveInformationShouldNotBeExposedInErrorResponse()">민감한 정보가 에러 응답에 포함되지 않아야 함</a>
-</li>
-<li>
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#validJWTShouldAllowAccessToProtectedRoutes()">유효한 JWT 토큰으로 보호된 경로 접근 시 라우팅 됨</a>
-</li>
-</ul>
-</div>
 <div class="tab">
 <h2>Packages</h2>
 <table>
@@ -171,53 +79,23 @@
 </thead>
 <tbody>
 <tr>
-<td class="skipped">
-<a href="packages/org.example.APIGatewaySvc.html">org.example.APIGatewaySvc</a>
-</td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>0.001s</td>
-<td class="skipped">-</td>
-</tr>
-<tr>
 <td class="success">
-<a href="packages/org.example.APIGatewaySvc.config.html">org.example.APIGatewaySvc.config</a>
+<a href="packages/org.example.APIGatewaySvc.filter.html">org.example.APIGatewaySvc.filter</a>
 </td>
-<td>15</td>
+<td>10</td>
 <td>0</td>
 <td>0</td>
-<td>3.978s</td>
+<td>4.061s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
-<td class="skipped">
-<a href="packages/org.example.APIGatewaySvc.gateway.html">org.example.APIGatewaySvc.gateway</a>
-</td>
-<td>11</td>
-<td>0</td>
-<td>11</td>
-<td>0.002s</td>
-<td class="skipped">-</td>
-</tr>
-<tr>
-<td class="skipped">
-<a href="packages/org.example.APIGatewaySvc.security.html">org.example.APIGatewaySvc.security</a>
-</td>
-<td>9</td>
-<td>0</td>
-<td>9</td>
-<td>0s</td>
-<td class="skipped">-</td>
-</tr>
-<tr>
 <td class="success">
-<a href="packages/org.example.APIGatewaySvc.util.html">org.example.APIGatewaySvc.util</a>
+<a href="packages/org.example.APIGatewaySvc.service.html">org.example.APIGatewaySvc.service</a>
 </td>
 <td>8</td>
 <td>0</td>
 <td>0</td>
-<td>0.363s</td>
+<td>0.541s</td>
 <td class="success">100%</td>
 </tr>
 </tbody>
@@ -238,63 +116,23 @@
 </thead>
 <tbody>
 <tr>
-<td class="skipped">
-<a href="classes/org.example.APIGatewaySvc.APIGatewaySvcApplicationTests.html">org.example.APIGatewaySvc.APIGatewaySvcApplicationTests</a>
-</td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>0.001s</td>
-<td class="skipped">-</td>
-</tr>
-<tr>
 <td class="success">
-<a href="classes/org.example.APIGatewaySvc.config.KeyResolverConfigTest.html">org.example.APIGatewaySvc.config.KeyResolverConfigTest</a>
+<a href="classes/org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest.html">org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest</a>
 </td>
-<td>9</td>
+<td>10</td>
 <td>0</td>
 <td>0</td>
-<td>3.569s</td>
+<td>4.061s</td>
 <td class="success">100%</td>
 </tr>
 <tr>
 <td class="success">
-<a href="classes/org.example.APIGatewaySvc.config.RateLimitConfigTest.html">org.example.APIGatewaySvc.config.RateLimitConfigTest</a>
-</td>
-<td>6</td>
-<td>0</td>
-<td>0</td>
-<td>0.409s</td>
-<td class="success">100%</td>
-</tr>
-<tr>
-<td class="skipped">
-<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest</a>
-</td>
-<td>11</td>
-<td>0</td>
-<td>11</td>
-<td>0.002s</td>
-<td class="skipped">-</td>
-</tr>
-<tr>
-<td class="skipped">
-<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">org.example.APIGatewaySvc.security.SecurityConfigTest</a>
-</td>
-<td>9</td>
-<td>0</td>
-<td>9</td>
-<td>0s</td>
-<td class="skipped">-</td>
-</tr>
-<tr>
-<td class="success">
-<a href="classes/org.example.APIGatewaySvc.util.ProblemDetailsUtilTest.html">org.example.APIGatewaySvc.util.ProblemDetailsUtilTest</a>
+<a href="classes/org.example.APIGatewaySvc.service.GatewayLogServiceTest.html">org.example.APIGatewaySvc.service.GatewayLogServiceTest</a>
 </td>
 <td>8</td>
 <td>0</td>
 <td>0</td>
-<td>0.363s</td>
+<td>0.541s</td>
 <td class="success">100%</td>
 </tr>
 </tbody>
@@ -308,7 +146,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="https://www.gradle.org">Gradle 8.14.3</a> at 2025. 8. 11. 오전 12:37:59</p>
+<a href="https://www.gradle.org">Gradle 8.14.3</a> at 2025. 8. 12. 오전 2:20:10</p>
 </div>
 </div>
 </body>

@@ -5,7 +5,18 @@
       "Bash(./gradlew:*)",
       "Bash(curl:*)",
       "Bash(rm:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(mkdir:*)",
+      "Bash(cmd.exe /c \"taskkill /F /PID 9860\")",
+      "Bash(pkill:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(java:*)",
+      "Bash(jps:*)",
+      "Bash(taskkill:*)",
+      "Bash(.gradlew.bat test --tests StandardResponseFilterTest)",
+      "Bash(gradlew.bat test:*)",
+      "Bash(del \"C:\\workspace\\BE-APIGateway\\BLOCK-FEATURE-GUIDE.md\")",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.4'
+    id 'org.springframework.boot' version '3.4.3'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -25,7 +25,7 @@ repositories {
 }
 
 ext {
-    set('springCloudVersion', "2025.0.0")
+    set('springCloudVersion', "2024.0.1")
 }
 
 dependencies {
@@ -40,24 +40,36 @@ dependencies {
     
     // Data & Messaging - Redis for rate limiting
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
-    
+
+    // Service discovery / load balancing (prod with lb:// URIs)
+    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
+    // (Optional) Eureka client
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // Spring Kafka
+    implementation 'org.springframework.kafka:spring-kafka'
+
     // Monitoring & Observability
     implementation 'io.micrometer:micrometer-registry-prometheus'
     
     // Security & OAuth2 (Auth0 JWT 토큰 검증) - Reactive 버전
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.security:spring-security-oauth2-jose'
     
     // JSON processing
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    // Load environment variables from .env files
+    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
     
     // JWT token generation for testing
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
     
-    // Documentation (Swagger/OpenAPI) - WebFlux 버전
-    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.2.0'
+    // Documentation (Swagger/OpenAPI) - WebFlux 버전 (Spring Boot 3.4.x 호환)
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.6.0'
     
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
@@ -66,15 +78,20 @@ dependencies {
     // TestContainers for integration testing
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:junit-jupiter'
+    
+    // WireMock for mocking downstream services
+    testImplementation 'com.github.tomakehurst:wiremock-jre8:2.35.0'
+    testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock'
 
-    compileOnly 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok:1.18.34'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok:1.18.34'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 dependencyManagement {
     imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:3.4.3"
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
     }
 }

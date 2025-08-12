@@ -5,19 +5,40 @@ spring:
   # 테스트용 Spring Cloud Gateway 설정
   cloud:
     gateway:
-      # 테스트용 라우트 설정 (최소화)
+      # 테스트용 라우트 설정
       routes:
-        - id: test-public-route
-          uri: http://localhost:${server.port}
+        - id: user-service-test
+          uri: http://localhost:8081
           predicates:
-            - Path=/public/**
+            - Path=/users/**
           filters:
-            - StripPrefix=0
-        
-        - id: test-protected-route
-          uri: http://httpbin.org/status/404  # 테스트용 목적지
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@defaultRedisRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+        - id: api-management-service-test
+          uri: http://localhost:8082
           predicates:
-            - Path=/api/**
+            - Path=/apimgmt/**
+          filters:
+            - StripPrefix=1
+        - id: custom-api-management-service-test
+          uri: http://localhost:8083
+          predicates:
+            - Path=/customapi/**
+          filters:
+            - StripPrefix=1
+        - id: ai-feature-service-test
+          uri: http://localhost:8084
+          predicates:
+            - Path=/aifeature/**
+          filters:
+            - StripPrefix=1
+        - id: system-management-service-test
+          uri: http://localhost:8085
+          predicates:
+            - Path=/sysmgmt/**
           filters:
             - StripPrefix=1
       
@@ -49,8 +70,9 @@ spring:
 
 # Auth0 테스트 설정
 auth0:
-  issuerUri: https://test.auth0.com/
-  audience: test-audience
+  issuerUri: https://api-bridge.us.auth0.com/
+  audience: https://api.api-bridge.com
+  client-id: test-client-id
 
 # JWT 테스트 모드 활성화
 jwt:

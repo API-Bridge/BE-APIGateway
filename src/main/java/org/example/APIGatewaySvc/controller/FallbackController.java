@@ -1,5 +1,10 @@
 package org.example.APIGatewaySvc.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.APIGatewaySvc.util.ProblemDetailsUtil;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +28,7 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("/fallback")
+@Tag(name = "Fallback Controller", description = "Circuit Breaker Fallback - 서비스 장애 시 대체 응답")
 public class FallbackController {
 
     /**
@@ -33,7 +39,30 @@ public class FallbackController {
      * @return Mono<Void> Service Unavailable 응답
      */
     @GetMapping("/service-unavailable")
-    public Mono<Void> serviceUnavailable(ServerWebExchange exchange) {
+    @Operation(
+        summary = "Service Unavailable Fallback", 
+        description = """
+            **일반적인 서비스 불가 상태 Fallback**
+            
+            **트리거 조건**: Circuit Breaker가 열린 상태
+            
+            **목적**: 
+            - 다운스트림 서비스 장애 시 표준화된 에러 응답
+            - RFC 7807 Problem Details 표준 준수
+            - 사용자 친화적인 에러 메시지 제공
+            
+            **응답 형식**:
+            - HTTP Status: 503 Service Unavailable
+            - Content-Type: application/problem+json
+            - Request ID 포함으로 에러 추적 가능
+            
+            **참고**: 이 엔드포인트는 직접 호출하지 마세요. Circuit Breaker에 의해 자동 호출됩니다.
+            """
+    )
+    @ApiResponses(value = {
+@ApiResponse(responseCode = "503", description = "서비스를 일시적으로 사용할 수 없습니다")
+    })
+    public Mono<Void> serviceUnavailable(@Parameter(hidden = true) ServerWebExchange exchange) {
         ServerHttpResponse response = exchange.getResponse();
         String requestId = generateRequestId();
         String detail = "The requested service is temporarily unavailable. Please try again later.";

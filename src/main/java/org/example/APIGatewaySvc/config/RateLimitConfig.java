@@ -17,6 +17,8 @@ import org.springframework.context.annotation.Primary;
  * - 실시간 Rate Limit 상태 모니터링
  */
 @Configuration
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+        name = "spring.data.redis.repositories.enabled", havingValue = "true", matchIfMissing = true)
 public class RateLimitConfig {
 
     @Value("${rate-limit.default.replenish-rate:10}")

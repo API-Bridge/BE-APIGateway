@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2025-08-11T17:20:05.258Z" hostname="SEOKYEEUN" time="4.074">
+  <properties/>
+  <testcase name="shouldExtractRequestIdFromHeader()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="3.795"/>
+  <testcase name="shouldHaveCorrectOrder()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.006"/>
+  <testcase name="shouldLogRequestStartAndEnd()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.018"/>
+  <testcase name="shouldLogRequestError()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.011"/>
+  <testcase name="shouldMeasureDurationAccurately()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.171"/>
+  <testcase name="shouldExtractClientIpFromHeaders()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.022"/>
+  <testcase name="shouldHandleResponseSize()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.014"/>
+  <testcase name="shouldHandleNullResponseSize()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.008"/>
+  <testcase name="shouldDetectPublicApiName()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.009"/>
+  <testcase name="shouldCollectImportantHeaders()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.007"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

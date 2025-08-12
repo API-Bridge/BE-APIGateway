@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Gateway - Auth0 JWT 테스트</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+        }
+        .auth-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .token-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .api-test-section {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .result-section {
+            background: #e2e3e5;
+            border: 1px solid #c6c8ca;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px 10px 5px 0;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .error-btn {
+            background-color: #dc3545;
+        }
+        .error-btn:hover {
+            background-color: #c82333;
+        }
+        .success-btn {
+            background-color: #28a745;
+        }
+        .success-btn:hover {
+            background-color: #1e7e34;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            color: #856404;
+        }
+        .token-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .claims-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .result-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .user-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .status-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .status-error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        #loadingSpinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .step-completed {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .step-error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 API Gateway - Auth0 JWT 테스트 페이지</h1>
+        
+        <div class="info">
+            <strong>📋 테스트 시나리오:</strong><br>
+            1. 테스트용 JWT 토큰 발급 또는 Auth0 실제 토큰 입력<br>
+            2. 토큰 정보 및 클레임 확인<br>
+            3. 마이크로서비스 라우팅 테스트 (/gateway/ 경로)<br>
+            4. 인증 에러 시나리오 테스트
+        </div>
+
+        <!-- Step 1: 토큰 획득 -->
+        <div class="auth-section">
+            <h2>Step 1: JWT 토큰 획득</h2>
+            
+            <div class="step" id="step1">
+                <h3>옵션 A: 테스트용 JWT 토큰 생성</h3>
+                <button onclick="generateTestToken()" class="success-btn">🎫 테스트 토큰 생성</button>
+                <button onclick="generateExpiredToken()" class="error-btn">⏰ 만료된 토큰 생성 (에러 테스트)</button>
+                <button onclick="generateInvalidToken()" class="error-btn">❌ 무효한 토큰 생성 (에러 테스트)</button>
+                
+                <div class="warning">
+                    <strong>⚠️ 테스트 전용:</strong> 이 토큰들은 개발/테스트 목적으로만 사용됩니다.
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>옵션 B: 실제 Auth0 JWT 토큰 입력</h3>
+                <textarea id="customTokenInput" placeholder="실제 Auth0 JWT 토큰을 여기에 붙여넣으세요..." 
+                          style="width: 100%; height: 100px; font-family: monospace; font-size: 12px;"></textarea>
+                <br>
+                <button onclick="useCustomToken()" style="margin-top: 10px;">🔑 토큰 사용하기</button>
+                
+                <div class="info">
+                    <strong>💡 Auth0에서 토큰 발급 방법:</strong><br>
+                    <code>curl -X POST https://api-bridge.us.auth0.com/oauth/token \<br>
+                    &nbsp;&nbsp;-H "Content-Type: application/json" \<br>
+                    &nbsp;&nbsp;-d '{"client_id": "CLIENT_ID", "client_secret": "CLIENT_SECRET", "audience": "https://api.api-bridge.com", "grant_type": "client_credentials"}'</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: 토큰 정보 표시 -->
+        <div class="token-section">
+            <h2>Step 2: JWT 토큰 정보</h2>
+            <div id="tokenInfo" style="display:none;">
+                <div class="step step-completed" id="tokenStep">
+                    <h3>✅ JWT 토큰 로드 완료</h3>
+                    <div id="tokenDisplay" class="token-display"></div>
+                    
+                    <h3>📋 JWT 클레임 정보</h3>
+                    <div id="claimsDisplay" class="claims-display"></div>
+                </div>
+            </div>
+            <div id="noTokenMessage" class="step">
+                <strong>🔍 대기 중:</strong> 위에서 토큰을 생성하거나 입력해주세요.
+            </div>
+        </div>
+
+        <!-- Step 3: API 라우팅 테스트 -->
+        <div class="api-test-section">
+            <h2>Step 3: 마이크로서비스 라우팅 테스트</h2>
+            
+            <div class="step">
+                <h3>🚀 Gateway 라우팅 테스트 (/gateway/ 경로)</h3>
+                <div id="apiButtons">
+                    <button id="testUsersBtn" onclick="testApiRoute('/gateway/users/api/health', 'GET')" disabled>👥 Users Service</button>
+                    <button id="testApiMgmtBtn" onclick="testApiRoute('/gateway/apimgmt/api/health', 'GET')" disabled>⚙️ API Management</button>
+                    <button id="testCustomApiBtn" onclick="testApiRoute('/gateway/customapi/api/health', 'GET')" disabled>🔧 Custom API</button>
+                    <button id="testAiFeatureBtn" onclick="testApiRoute('/gateway/aifeature/api/health', 'GET')" disabled>🤖 AI Feature</button>
+                    <button id="testSysMgmtBtn" onclick="testApiRoute('/gateway/sysmgmt/api/health', 'GET')" disabled>🖥️ System Management</button>
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>🔒 Gateway 내부 테스트 (인증 필요)</h3>
+                <button id="testProtectedBtn" onclick="testApiRoute('/test/protected', 'GET')" disabled>🛡️ 보호된 엔드포인트</button>
+                <button id="testUserInfoBtn" onclick="testApiRoute('/test/user-info', 'GET')" disabled>👤 사용자 정보 조회</button>
+                <button id="testRateLimitBtn" onclick="testRateLimit()" disabled>⏱️ Rate Limiting 테스트</button>
+            </div>
+            
+            <div class="step">
+                <h3>❌ 에러 시나리오 테스트</h3>
+                <div id="errorButtons">
+                    <button id="testNoTokenBtn" onclick="testWithoutToken()" class="error-btn">🚫 토큰 없이 접근</button>
+                    <button id="testInvalidTokenBtn" onclick="testWithInvalidToken()" class="error-btn">❌ 무효한 토큰</button>
+                    <button id="testExpiredBtn" onclick="testWithExpiredToken()" class="error-btn">⏰ 만료된 토큰</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: 결과 표시 -->
+        <div class="result-section">
+            <h2>Step 4: API 호출 결과</h2>
+            <div id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>API 호출 중...</p>
+            </div>
+            <div id="resultDisplay" class="result-display">
+🚀 Ready! 위의 버튼들을 클릭하여 API 테스트를 시작하세요.
+
+📊 결과에 포함되는 정보:
+- HTTP 상태 코드
+- 응답 헤더 (X-Request-ID, Rate Limit 정보 등)
+- 응답 본문
+- 호출 시간 및 지연시간
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAccessToken = null;
+        let testTokens = {};
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('📱 API Gateway 테스트 페이지 로드됨');
+            showResult('🚀 API Gateway 테스트 페이지가 준비되었습니다.\n위의 Step 1에서 JWT 토큰을 생성하거나 입력해주세요.', 'info');
+        });
+
+        // 테스트 토큰 생성
+        async function generateTestToken() {
+            try {
+                showLoading(true);
+                const response = await fetch('/public/jwt/tokens');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                testTokens = data.tokens;
+                
+                // 유효한 토큰을 기본으로 사용
+                const validToken = testTokens.valid;
+                if (validToken) {
+                    currentAccessToken = validToken;
+                    document.getElementById('step1').className = 'step step-completed';
+                    await showTokenInfo();
+                    enableApiButtons();
+                    showResult('✅ 테스트용 JWT 토큰이 생성되었습니다!\n이제 Step 3에서 API 라우팅을 테스트할 수 있습니다.', 'success');
+                } else {
+                    throw new Error('유효한 토큰을 찾을 수 없습니다.');
+                }
+            } catch (error) {
+                console.error('테스트 토큰 생성 실패:', error);
+                document.getElementById('step1').className = 'step step-error';
+                showResult('❌ 테스트 토큰 생성에 실패했습니다: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 만료된 토큰 생성
+        async function generateExpiredToken() {
+            if (!testTokens.expired) {
+                await generateTestToken(); // 먼저 토큰들을 가져옴
+            }
+            
+            if (testTokens.expired) {
+                currentAccessToken = testTokens.expired;
+                await showTokenInfo();
+                enableApiButtons();
+                showResult('⏰ 만료된 테스트 토큰이 설정되었습니다.\n이제 API 호출 시 401 에러를 확인할 수 있습니다.', 'error');
+            }
+        }
+
+        // 무효한 토큰 생성
+        async function generateInvalidToken() {
+            if (!testTokens.invalid_audience) {
+                await generateTestToken(); // 먼저 토큰들을 가져옴
+            }
+            
+            if (testTokens.invalid_audience) {
+                currentAccessToken = testTokens.invalid_audience;
+                await showTokenInfo();
+                enableApiButtons();
+                showResult('❌ 무효한 audience를 가진 토큰이 설정되었습니다.\n이제 API 호출 시 401 에러를 확인할 수 있습니다.', 'error');
+            }
+        }
+
+        // 커스텀 토큰 사용
+        function useCustomToken() {
+            const tokenInput = document.getElementById('customTokenInput').value.trim();
+            if (!tokenInput) {
+                showResult('❌ 토큰을 입력해주세요.', 'error');
+                return;
+            }
+            
+            currentAccessToken = tokenInput;
+            document.getElementById('step1').className = 'step step-completed';
+            showTokenInfo();
+            enableApiButtons();
+            showResult('✅ 커스텀 JWT 토큰이 설정되었습니다!\n이제 Step 3에서 API 라우팅을 테스트할 수 있습니다.', 'success');
+        }
+
+        // 토큰 정보 표시
+        async function showTokenInfo() {
+            try {
+                if (!currentAccessToken) return;
+
+                // JWT 토큰 파싱
+                const tokenParts = currentAccessToken.split('.');
+                if (tokenParts.length !== 3) {
+                    throw new Error('유효하지 않은 JWT 형식입니다.');
+                }
+
+                const header = JSON.parse(atob(tokenParts[0]));
+                const payload = JSON.parse(atob(tokenParts[1]));
+                
+                // 토큰 마스킹 (보안)
+                const maskedToken = tokenParts[0] + '...' + 
+                    '[PAYLOAD_MASKED]' + '...' + 
+                    tokenParts[2].substring(tokenParts[2].length - 20);
+                
+                // 만료 시간 계산
+                const now = Math.floor(Date.now() / 1000);
+                const expIn = payload.exp ? (payload.exp - now) : null;
+                const isExpired = expIn !== null && expIn <= 0;
+                
+                document.getElementById('tokenDisplay').textContent = maskedToken;
+                document.getElementById('claimsDisplay').innerHTML = `
+📋 헤더 (Header):
+• 알고리즘: ${header.alg || 'N/A'}
+• 타입: ${header.typ || 'N/A'}
+
+📋 페이로드 (Payload):
+• 발급자 (iss): ${payload.iss || 'N/A'}
+• 대상 (aud): ${payload.aud || 'N/A'}
+• 사용자 ID (sub): ${payload.sub || 'N/A'}
+• 발급 시간 (iat): ${payload.iat ? new Date(payload.iat * 1000).toLocaleString('ko-KR') : 'N/A'}
+• 만료 시간 (exp): ${payload.exp ? new Date(payload.exp * 1000).toLocaleString('ko-KR') : 'N/A'}
+• 만료까지: ${expIn !== null ? (isExpired ? '❌ 만료됨' : `✅ ${Math.floor(expIn/60)}분 ${expIn%60}초`) : 'N/A'}
+• 권한 (scope): ${payload.scope || 'N/A'}
+• 권한 목록: ${JSON.stringify(payload.permissions || [], null, 2)}
+• 역할: ${JSON.stringify(payload.roles || [], null, 2)}
+
+🔍 토큰 상태: ${isExpired ? '❌ 만료됨' : '✅ 유효함'}
+                `;
+                
+                document.getElementById('tokenInfo').style.display = 'block';
+                document.getElementById('noTokenMessage').style.display = 'none';
+                document.getElementById('tokenStep').className = isExpired ? 'step step-error' : 'step step-completed';
+                
+            } catch (error) {
+                console.error('토큰 파싱 실패:', error);
+                document.getElementById('tokenStep').className = 'step step-error';
+                showResult('❌ 토큰 정보를 파싱할 수 없습니다: ' + error.message, 'error');
+            }
+        }
+
+        // API 버튼 활성화
+        function enableApiButtons() {
+            const buttons = [
+                'testUsersBtn', 'testApiMgmtBtn', 'testCustomApiBtn', 
+                'testAiFeatureBtn', 'testSysMgmtBtn', 'testProtectedBtn', 
+                'testUserInfoBtn', 'testRateLimitBtn'
+            ];
+            buttons.forEach(buttonId => {
+                document.getElementById(buttonId).disabled = false;
+            });
+        }
+
+        // API 라우팅 테스트
+        async function testApiRoute(path, method = 'GET') {
+            if (!currentAccessToken) {
+                showResult('❌ 토큰이 설정되지 않았습니다. Step 1에서 토큰을 생성해주세요.', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(path, {
+                    method: method,
+                    headers: {
+                        'Authorization': `Bearer ${currentAccessToken}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                // 응답 헤더 수집
+                const responseHeaders = {};
+                response.headers.forEach((value, key) => {
+                    responseHeaders[key] = value;
+                });
+                
+                // 응답 본문 처리
+                let responseBody;
+                const contentType = response.headers.get('content-type') || '';
+                
+                if (contentType.includes('application/json')) {
+                    try {
+                        responseBody = await response.json();
+                    } catch (e) {
+                        responseBody = await response.text();
+                    }
+                } else {
+                    responseBody = await response.text();
+                }
+                
+                const result = {
+                    timestamp: new Date().toISOString(),
+                    request: {
+                        method: method,
+                        path: path,
+                        headers: {
+                            'Authorization': 'Bearer [MASKED]',
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        }
+                    },
+                    response: {
+                        status: response.status,
+                        statusText: response.statusText,
+                        duration: duration + 'ms',
+                        headers: responseHeaders,
+                        body: responseBody
+                    }
+                };
+                
+                const resultText = `🚀 API 호출 결과:
+${JSON.stringify(result, null, 2)}`;
+                
+                showResult(resultText, response.ok ? 'success' : 'error');
+                
+            } catch (error) {
+                const errorResult = {
+                    timestamp: new Date().toISOString(),
+                    request: {
+                        method: method,
+                        path: path
+                    },
+                    error: {
+                        message: error.message,
+                        type: error.name
+                    }
+                };
+                
+                showResult(`❌ API 호출 실패:
+${JSON.stringify(errorResult, null, 2)}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Rate Limiting 테스트
+        async function testRateLimit() {
+            if (!currentAccessToken) {
+                showResult('❌ 토큰이 설정되지 않았습니다.', 'error');
+                return;
+            }
+
+            showLoading(true);
+            showResult('⏱️ Rate Limiting 테스트 시작...\n연속으로 25회 API 호출을 보냅니다.', 'info');
+            
+            const results = [];
+            for (let i = 1; i <= 25; i++) {
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch('/test/rate-limit-test', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${currentAccessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const endTime = Date.now();
+                    const duration = endTime - startTime;
+                    
+                    results.push({
+                        attempt: i,
+                        status: response.status,
+                        duration: duration + 'ms',
+                        rateLimitHeaders: {
+                            remaining: response.headers.get('X-RateLimit-Remaining'),
+                            burstCapacity: response.headers.get('X-RateLimit-Burst-Capacity'),
+                            replenishRate: response.headers.get('X-RateLimit-Replenish-Rate')
+                        }
+                    });
+                    
+                    // 429 에러가 발생하면 중단
+                    if (response.status === 429) {
+                        showResult(`🚫 Rate Limit 테스트 완료!
+${i}번째 요청에서 429 Too Many Requests 발생
+
+📊 결과 요약:
+${JSON.stringify(results, null, 2)}`, 'error');
+                        showLoading(false);
+                        return;
+                    }
+                    
+                    // 잠깐 대기 (너무 빠른 요청 방지)
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                } catch (error) {
+                    results.push({
+                        attempt: i,
+                        error: error.message
+                    });
+                }
+            }
+            
+            showResult(`✅ Rate Limiting 테스트 완료 (25회 모두 성공)
+Rate Limit에 걸리지 않았습니다.
+
+📊 결과:
+${JSON.stringify(results, null, 2)}`, 'success');
+            
+            showLoading(false);
+        }
+
+        // 토큰 없이 테스트
+        async function testWithoutToken() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/test/protected', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const responseBody = await response.text();
+                
+                const result = {
+                    test: '토큰 없이 접근 테스트',
+                    expected: '401 Unauthorized',
+                    actual: {
+                        status: response.status,
+                        statusText: response.statusText,
+                        body: responseBody
+                    }
+                };
+                
+                showResult(`🚫 토큰 없이 접근 테스트 결과:
+${JSON.stringify(result, null, 2)}`, response.status === 401 ? 'success' : 'error');
+                
+            } catch (error) {
+                showResult(`❌ 테스트 실패: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 무효한 토큰으로 테스트
+        async function testWithInvalidToken() {
+            showLoading(true);
+            
+            try {
+                const fakeToken = 'invalid.jwt.token';
+                const response = await fetch('/test/protected', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${fakeToken}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const responseBody = await response.text();
+                
+                const result = {
+                    test: '무효한 토큰 테스트',
+                    expected: '401 Unauthorized',
+                    actual: {
+                        status: response.status,
+                        statusText: response.statusText,
+                        body: responseBody
+                    }
+                };
+                
+                showResult(`❌ 무효한 토큰 테스트 결과:
+${JSON.stringify(result, null, 2)}`, response.status === 401 ? 'success' : 'error');
+                
+            } catch (error) {
+                showResult(`❌ 테스트 실패: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 만료된 토큰으로 테스트
+        async function testWithExpiredToken() {
+            if (!testTokens.expired) {
+                showResult('❌ 만료된 토큰이 준비되지 않았습니다. 먼저 "만료된 토큰 생성"을 클릭해주세요.', 'error');
+                return;
+            }
+
+            showLoading(true);
+            
+            try {
+                const response = await fetch('/test/protected', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${testTokens.expired}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const responseBody = await response.text();
+                
+                const result = {
+                    test: '만료된 토큰 테스트',
+                    expected: '401 Unauthorized',
+                    actual: {
+                        status: response.status,
+                        statusText: response.statusText,
+                        body: responseBody
+                    }
+                };
+                
+                showResult(`⏰ 만료된 토큰 테스트 결과:
+${JSON.stringify(result, null, 2)}`, response.status === 401 ? 'success' : 'error');
+                
+            } catch (error) {
+                showResult(`❌ 테스트 실패: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 로딩 표시
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+        }
+
+        // 결과 표시
+        function showResult(result, type = 'info') {
+            const resultDisplay = document.getElementById('resultDisplay');
+            resultDisplay.textContent = result;
+            resultDisplay.className = 'result-display';
+            
+            if (type === 'success') {
+                resultDisplay.classList.add('status-success');
+            } else if (type === 'error') {
+                resultDisplay.classList.add('status-error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -2,33 +2,30 @@ spring:
   application:
     name: api-gateway
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    active: ${SPRING_PROFILES_ACTIVE:}
   
-  # 순환 참조 허용 (Swagger와 Gateway 통합을 위해)
   main:
     allow-circular-references: true
   
-  # Spring Cloud Gateway 설정
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      client-id: ${spring.application.name}-logging-producer
+      acks: 1
+      retries: 3
+      batch-size: 16384
+      linger-ms: 5
+      buffer-memory: 33554432
+      compression-type: snappy
+      enable-idempotence: true
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    template:
+      default-topic: logs.gateway
+
   cloud:
     gateway:
-      # 전역 CORS 설정 (새로운 구조)
-      server:
-        webflux:
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowedOriginPatterns: "*"
-                allowedMethods:
-                  - GET
-                  - POST
-                  - PUT
-                  - DELETE
-                  - OPTIONS
-                allowedHeaders: "*"
-                allowCredentials: true
-                maxAge: 3600
-      
-      # 기본 필터 설정 (모든 라우트에 적용)
       default-filters:
         - name: Retry
           args:
@@ -38,17 +35,64 @@ spring:
               first-backoff: 50ms
               max-backoff: 500ms
               factor: 2
-        - AddRequestHeader=X-Gateway-Timestamp, "#{T(java.time.Instant).now().toString()}"
-        - RemoveRequestHeader=Cookie  # 보안: 불필요한 쿠키 제거
+        - AddRequestHeader=X-Gateway, api-gateway
+        - RemoveRequestHeader=Cookie
+        - name: StandardResponseFilter
+        - name: TokenRelay
+      routes:
+        - id: user-service
+          uri: http://localhost:8093
+          predicates:
+            - Path=/gateway/users/**
+          filters:
+            - StripPrefix=1
+            - RewritePath=/gateway/users/(?<segment>.*), /mock/users/$\{segment}
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@userServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+        # ... (다른 라우트 설정 생략)
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
 
-  # OAuth2 Resource Server 설정 (Auth0 JWT 검증)
   security:
     oauth2:
+      client:
+        registration:
+          auth0:
+            client-id: ${AUTH0_CLIENT_ID:}
+            client-secret: ${AUTH0_CLIENT_SECRET:}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          auth0:
+            authorization-uri: https://api-bridge.us.auth0.com/authorize?audience=https://api.api-bridge.com
+            issuer-uri: ${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}
+            user-name-attribute: sub
       resourceserver:
         jwt:
           issuer-uri: ${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}
+          audience: ${AUTH0_AUDIENCE:https://api.api-bridge.com}
 
-  # Redis 설정 (Rate Limiting용)
   data:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}
@@ -60,29 +104,39 @@ spring:
           max-idle: 8
           min-idle: 0
 
+
 # Auth0 설정
 auth0:
   issuerUri: ${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}
   audience: ${AUTH0_AUDIENCE:https://api.api-bridge.com}
+  client-id: ${AUTH0_CLIENT_ID:}
 
-# 마이크로서비스 URI 설정
-services:
-  user-service:
-    uri: ${USER_SERVICE_URI:http://user-service:8080}
-  api-management-service:
-    uri: ${APIMGMT_SERVICE_URI:http://api-management-service:8080}
-  custom-api-management-service:
-    uri: ${CUSTOMAPI_SERVICE_URI:http://custom-api-management-service:8080}
-  ai-feature-service:
-    uri: ${AIFEATURE_SERVICE_URI:http://ai-feature-service:8080}
-  system-management-service:
-    uri: ${SYSMGMT_SERVICE_URI:http://system-management-service:8080}
+# Gateway 로깅 설정
+gateway:
+  logging:
+    enabled: ${GATEWAY_LOGGING_ENABLED:true}
+    kafka:
+      topic: ${GATEWAY_LOG_TOPIC:logs.gateway}
+    mask-sensitive-data: ${GATEWAY_MASK_SENSITIVE_DATA:true}
+
+## 마이크로서비스 URI 설정
+#services:
+#  user-service:
+#    uri: ${USER_SERVICE_URI:http://user-service:8081}
+#  api-management-service:
+#    uri: ${APIMGMT_SERVICE_URI:http://api-management-service:8082}
+#  custom-api-management-service:
+#    uri: ${CUSTOMAPI_SERVICE_URI:http://custom-api-management-service:8083}
+#  ai-feature-service:
+#    uri: ${AIFEATURE_SERVICE_URI:http://ai-feature-service:8084}
+#  system-management-service:
+#    uri: ${SYSMGMT_SERVICE_URI:http://system-management-service:8085}
 
 # Rate Limiting 설정
 rate-limit:
   default:
     replenish-rate: ${RATE_LIMIT_REPLENISH_RATE:10}      # 초당 토큰 보충 개수
-    burst-capacity: ${RATE_LIMIT_BURST_CAPACITY:20}      # 버스트 허용 토큰 수  
+    burst-capacity: ${RATE_LIMIT_BURST_CAPACITY:20}      # 버스트 허용 토큰 수
     requested-tokens: ${RATE_LIMIT_REQUESTED_TOKENS:1}   # 요청당 소비 토큰 수
   user-service:
     replenish-rate: 20   # 사용자 서비스는 더 관대하게
@@ -95,66 +149,51 @@ rate-limit:
     replenish-rate: 15   # 관리 서비스는 중간 정도
     burst-capacity: 30
 
-# Circuit Breaker 설정 (Resilience4j)
 resilience4j:
   circuitbreaker:
-    instances:
+    configs:
       default:
-        slidingWindowSize: 100
-        permittedNumberOfCallsInHalfOpenState: 10
-        slidingWindowType: COUNT_BASED
-        minimumNumberOfCalls: 20
-        waitDurationInOpenState: 60s
-        failureRateThreshold: 50
-        slowCallRateThreshold: 80
-        slowCallDurationThreshold: 3s
-      # User Service Circuit Breaker (더 관대한 설정)
-      user-service-cb:
-        slidingWindowSize: 50
-        minimumNumberOfCalls: 10
-        failureRateThreshold: 60
-        waitDurationInOpenState: 30s
-        slowCallDurationThreshold: 2s
-      # AI Feature Service Circuit Breaker (더 민감한 설정)
-      ai-feature-cb:
         slidingWindowSize: 20
-        minimumNumberOfCalls: 5
-        failureRateThreshold: 30
-        waitDurationInOpenState: 120s  # 2분간 열림
+        minimumNumberOfCalls: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        slowCallDurationThreshold: 3s
+        slowCallRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - java.io.IOException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+          - org.springframework.web.reactive.function.client.WebClientResponseException.ServiceUnavailable
+        ignoreExceptions:
+          - org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
+          - org.springframework.web.reactive.function.client.WebClientResponseException.NotFound
+    instances:
+      userSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
+      apiMgmtSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
+      customApiMgmtSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
+      aiFeatureSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
         slowCallDurationThreshold: 5s
-      # Management Services Circuit Breaker (중간 설정)
-      api-management-cb:
-        slidingWindowSize: 30
-        minimumNumberOfCalls: 8
-        failureRateThreshold: 40
-        waitDurationInOpenState: 45s
-      custom-api-management-cb:
-        slidingWindowSize: 30
-        minimumNumberOfCalls: 8
-        failureRateThreshold: 40
-        waitDurationInOpenState: 45s
-      system-management-cb:
-        slidingWindowSize: 30
-        minimumNumberOfCalls: 8
-        failureRateThreshold: 40
-        waitDurationInOpenState: 45s
-  retry:
-    instances:
-      default:
-        maxAttempts: 3
-        waitDuration: 1s
-        exponentialBackoffMultiplier: 2
-      # AI Feature Service는 재시도 더 적게
-      ai-feature-retry:
-        maxAttempts: 2
-        waitDuration: 2s
-  bulkhead:
-    instances:
-      default:
-        maxConcurrentCalls: 10
-      # AI Feature Service는 동시 호출 제한
-      ai-feature-bulkhead:
-        maxConcurrentCalls: 5
+        slowCallRateThreshold: 30
+      systemMgmtSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
+  metrics:
+    enabled: true
+    legacy:
+      enabled: false
+  prometheus:
+    enabled: true
 
 # 로깅 설정
 logging:
@@ -163,6 +202,8 @@ logging:
     org.example.APIGatewaySvc: DEBUG
     org.springframework.cloud.gateway: DEBUG
     org.springframework.security: DEBUG
+    org.springframework.security.oauth2.jwt: DEBUG
+    com.nimbusds: DEBUG
     reactor.netty: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId:-}] %logger{36} - %msg%n"
@@ -173,13 +214,16 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus,metrics,gateway
+        include: health,info,prometheus,metrics,gateway,circuitbreakers
       base-path: /actuator
   endpoint:
     health:
       show-details: when_authorized
+      show-components: always
     gateway:
-      access: unrestricted  # Gateway 라우트 정보 노출
+      access: read_only
+    circuitbreakers:
+      enabled: true
   prometheus:
     metrics:
       export:
@@ -188,9 +232,19 @@ management:
     tags:
       service: api-gateway
       version: ${BUILD_VERSION:dev}
+      environment: ${SPRING_PROFILES_ACTIVE:local}
+    export:
+      prometheus:
+        descriptions: true
+        histogram-flavor: prometheus
   tracing:
     sampling:
       probability: 1.0
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
 
 # 서버 설정
 server:
@@ -199,7 +253,11 @@ server:
     connection-timeout: 2s
     idle-timeout: 15s
 
-# OpenAPI 설정
+# Eureka 비활성화 (JWT 테스트 목적)
+eureka:
+  client:
+    enabled: false
+
 springdoc:
   api-docs:
     path: /v3/api-docs
@@ -207,157 +265,3 @@ springdoc:
     path: /swagger-ui.html
     operationsSorter: method
   show-actuator: true
-
----
-# 개발 환경 설정
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-# 테스트 모드 활성화 (개발 환경에서만)
-jwt:
-  test-mode: true
-
-  cloud:
-    gateway:
-      routes:
-        # 공개 엔드포인트 (인증 불필요)
-        - id: public-routes
-          uri: lb://api-gateway  # 자기 자신
-          predicates:
-            - Path=/public/**
-          filters:
-            - StripPrefix=0  # prefix 제거하지 않음
-        
-        # 테스트용 모킹 라우트 (개발환경에서만)
-        - id: mock-user-service
-          uri: http://httpbin.org
-          predicates:
-            - Path=/api/users/**
-          filters:
-            - StripPrefix=2
-            - AddRequestHeader=X-Mock-Service, user-service
-        
-        - id: mock-api-management
-          uri: http://httpbin.org
-          predicates:
-            - Path=/api/apimgmt/**
-          filters:
-            - StripPrefix=2
-            - AddRequestHeader=X-Mock-Service, api-management-service
-
-logging:
-  level:
-    org.example.APIGatewaySvc: DEBUG
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.security: DEBUG
-
----
-# 프로덕션 환경 설정
-spring:
-  config:
-    activate:
-      on-profile: prod
-  
-  cloud:
-    gateway:
-      routes:
-        # User Service 라우팅 (관대한 Rate Limit)
-        - id: user-service
-          uri: ${services.user-service.uri}
-          predicates:
-            - Path=/api/users/**
-          filters:
-            - StripPrefix=2  # /api/users → /
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@userServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: user-service-cb
-                fallback-uri: forward:/fallback/user-service
-            - AddRequestHeader=X-Service-Name, user-service
-        
-        # API Management Service 라우팅 (관리 정책)
-        - id: api-management-service
-          uri: ${services.api-management-service.uri}
-          predicates:
-            - Path=/api/apimgmt/**
-          filters:
-            - StripPrefix=2  # /api/apimgmt → /
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: api-management-cb
-                fallback-uri: forward:/fallback/api-management
-            - AddRequestHeader=X-Service-Name, api-management-service
-        
-        # Custom API Management Service 라우팅 (관리 정책)
-        - id: custom-api-management-service
-          uri: ${services.custom-api-management-service.uri}
-          predicates:
-            - Path=/api/customapi/**
-          filters:
-            - StripPrefix=2  # /api/customapi → /
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: custom-api-management-cb
-                fallback-uri: forward:/fallback/custom-api-management
-            - AddRequestHeader=X-Service-Name, custom-api-management-service
-        
-        # AI Feature Service 라우팅 (엄격한 Rate Limit)
-        - id: ai-feature-service
-          uri: ${services.ai-feature-service.uri}
-          predicates:
-            - Path=/api/aifeature/**
-          filters:
-            - StripPrefix=2  # /api/aifeature → /
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@aiServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: ai-feature-cb
-                fallback-uri: forward:/fallback/ai-feature
-            - AddRequestHeader=X-Service-Name, ai-feature-service
-            - AddRequestHeader=X-Rate-Limited, "true"  # AI 서비스는 특별 표시
-        
-        # System Management Service 라우팅 (관리 정책)
-        - id: system-management-service
-          uri: ${services.system-management-service.uri}
-          predicates:
-            - Path=/api/sysmgmt/**
-          filters:
-            - StripPrefix=2  # /api/sysmgmt → /
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: system-management-cb
-                fallback-uri: forward:/fallback/system-management
-            - AddRequestHeader=X-Service-Name, system-management-service
-
-logging:
-  level:
-    org.example.APIGatewaySvc: INFO
-    org.springframework.cloud.gateway: WARN
-    org.springframework.security: WARN
-  file:
-    name: logs/api-gateway.log
-
-management:
-  endpoint:
-    health:
-      show-details: never

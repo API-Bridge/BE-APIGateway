@@ -1,0 +1,47 @@
+2025-08-12 10:32:11.846 [restartedMain] INFO  [] o.e.A.APIGatewaySvcApplication - Starting APIGatewaySvcApplication using Java 17.0.13 with PID 18188 (C:\workspace\BE-APIGateway\build\classes\java\main started by yes36 in C:\workspace\BE-APIGateway)
+2025-08-12 10:32:11.849 [restartedMain] DEBUG [] o.e.A.APIGatewaySvcApplication - Running with Spring Boot v3.4.3, Spring v6.2.3
+2025-08-12 10:32:11.850 [restartedMain] INFO  [] o.e.A.APIGatewaySvcApplication - The following 1 profile is active: "local"
+2025-08-12 10:32:11.956 [restartedMain] INFO  [] o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-08-12 10:32:11.957 [restartedMain] INFO  [] o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-08-12 10:32:19.119 [restartedMain] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-12 10:32:19.162 [restartedMain] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-08-12 10:32:19.653 [restartedMain] INFO  [] o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 271 ms. Found 0 Redis repository interfaces.
+2025-08-12 10:32:21.458 [restartedMain] INFO  [] o.s.cloud.context.scope.GenericScope - BeanFactory id=d96138cd-0fde-38cf-900f-8710e7ce725b
+2025-08-12 10:32:27.365 [restartedMain] DEBUG [] o.s.c.g.config.GatewayProperties - Routes supplied from Gateway Properties: [RouteDefinition{id='user-service-mock', predicates=[PredicateDefinition{name='Path', args={_genkey_0=/gateway/users/**}}], filters=[FilterDefinition{name='RewritePath', args={_genkey_0=/gateway/users/(?<segment>.*), _genkey_1=/mock/users/$\{segment}}}, FilterDefinition{name='RequestRateLimiter', args={rate-limiter=#{@userServiceRateLimiter}, key-resolver=#{@userKeyResolver}}}, FilterDefinition{name='CircuitBreaker', args={name=userSvcCb, fallback-uri=forward:/fallback/user-service}}], uri=http://localhost:8080, order=0, metadata={}, enabled=true}, RouteDefinition{id='api-management-service-mock', predicates=[PredicateDefinition{name='Path', args={_genkey_0=/gateway/apimgmt/**}}], filters=[FilterDefinition{name='StripPrefix', args={_genkey_0=2}}, FilterDefinition{name='RewritePath', args={_genkey_0=/(?<segment>.*), _genkey_1=/mock/apimgmt/$\{segment}}}, FilterDefinition{name='RequestRateLimiter', args={rate-limiter=#{@managementServiceRateLimiter}, key-resolver=#{@userKeyResolver}}}, FilterDefinition{name='CircuitBreaker', args={name=apiMgmtSvcCb, fallback-uri=forward:/fallback/api-management}}], uri=http://localhost:8080, order=0, metadata={}, enabled=true}, RouteDefinition{id='custom-api-management-service-mock', predicates=[PredicateDefinition{name='Path', args={_genkey_0=/gateway/customapi/**}}], filters=[FilterDefinition{name='StripPrefix', args={_genkey_0=2}}, FilterDefinition{name='RewritePath', args={_genkey_0=/(?<segment>.*), _genkey_1=/mock/customapi/$\{segment}}}, FilterDefinition{name='RequestRateLimiter', args={rate-limiter=#{@managementServiceRateLimiter}, key-resolver=#{@userKeyResolver}}}, FilterDefinition{name='CircuitBreaker', args={name=customApiMgmtSvcCb, fallback-uri=forward:/fallback/custom-api-management}}], uri=http://localhost:8080, order=0, metadata={}, enabled=true}, RouteDefinition{id='ai-feature-service-mock', predicates=[PredicateDefinition{name='Path', args={_genkey_0=/gateway/aifeature/**}}], filters=[FilterDefinition{name='StripPrefix', args={_genkey_0=2}}, FilterDefinition{name='RewritePath', args={_genkey_0=/(?<segment>.*), _genkey_1=/mock/aifeature/$\{segment}}}, FilterDefinition{name='RequestRateLimiter', args={rate-limiter=#{@aiServiceRateLimiter}, key-resolver=#{@userKeyResolver}}}, FilterDefinition{name='CircuitBreaker', args={name=aiFeatureSvcCb, fallback-uri=forward:/fallback/ai-feature}}], uri=http://localhost:8080, order=0, metadata={}, enabled=true}, RouteDefinition{id='system-management-service-mock', predicates=[PredicateDefinition{name='Path', args={_genkey_0=/gateway/sysmgmt/**}}], filters=[FilterDefinition{name='StripPrefix', args={_genkey_0=2}}, FilterDefinition{name='RewritePath', args={_genkey_0=/(?<segment>.*), _genkey_1=/mock/sysmgmt/$\{segment}}}, FilterDefinition{name='RequestRateLimiter', args={rate-limiter=#{@managementServiceRateLimiter}, key-resolver=#{@userKeyResolver}}}, FilterDefinition{name='CircuitBreaker', args={name=systemMgmtSvcCb, fallback-uri=forward:/fallback/system-management}}], uri=http://localhost:8080, order=0, metadata={}, enabled=true}]
+2025-08-12 10:32:27.846 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [After]
+2025-08-12 10:32:27.846 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Before]
+2025-08-12 10:32:27.846 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Between]
+2025-08-12 10:32:27.846 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Cookie]
+2025-08-12 10:32:27.846 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Header]
+2025-08-12 10:32:27.846 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Host]
+2025-08-12 10:32:27.846 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Method]
+2025-08-12 10:32:27.846 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Path]
+2025-08-12 10:32:27.846 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Query]
+2025-08-12 10:32:27.846 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [ReadBody]
+2025-08-12 10:32:27.847 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [RemoteAddr]
+2025-08-12 10:32:27.847 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [XForwardedRemoteAddr]
+2025-08-12 10:32:27.847 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [Weight]
+2025-08-12 10:32:27.847 [restartedMain] INFO  [] o.s.c.g.r.RouteDefinitionRouteLocator - Loaded RoutePredicateFactory [CloudFoundryRouteService]
+2025-08-12 10:32:27.937 [restartedMain] INFO  [] o.s.b.a.e.web.EndpointLinksResolver - Exposing 6 endpoints beneath base path '/actuator'
+2025-08-12 10:32:29.521 [restartedMain] WARN  [] o.s.w.r.r.ResourceHandlerUtils - Appended trailing slash to static resource location: classpath:/static/auth-test.html/
+2025-08-12 10:32:30.423 [restartedMain] WARN  [] o.s.b.d.a.OptionalLiveReloadServer - Unable to start LiveReload server
+2025-08-12 10:32:30.455 [restartedMain] INFO  [] o.s.c.n.e.c.DiscoveryClientOptionalArgsConfiguration - Eureka HTTP Client uses RestTemplate.
+2025-08-12 10:32:30.554 [restartedMain] WARN  [] o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2025-08-12 10:32:31.225 [restartedMain] WARN  [] o.s.b.w.r.c.AnnotationConfigReactiveWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2025-08-12 10:32:31.288 [restartedMain] INFO  [] o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-08-12 10:32:31.365 [restartedMain] ERROR [] o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8080 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8080 or configure this application to listen on another port.
+

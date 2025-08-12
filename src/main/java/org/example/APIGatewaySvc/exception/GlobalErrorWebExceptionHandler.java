@@ -1,6 +1,4 @@
 package org.example.APIGatewaySvc.exception;
-
-import org.example.APIGatewaySvc.filter.RequestIdFilter;
 import org.example.APIGatewaySvc.util.ProblemDetailsUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,20 +124,21 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
                 "Rate limit exceeded", detail, requestId);
         }
 
-        // ResponseStatusException (명시적 HTTP 상태)
+        // ResponseStatusException (명시적 HTTP 상태) - 원래 상태를 보존
         if (ex instanceof ResponseStatusException responseEx) {
             HttpStatus status = HttpStatus.resolve(responseEx.getStatusCode().value());
             if (status == null) status = HttpStatus.INTERNAL_SERVER_ERROR;
-            
+
+            // 상태에 맞춰 Problem Details 생성 (기본 메시지 보강)
             return switch (status) {
                 case UNAUTHORIZED -> ProblemDetailsUtil.writeUnauthorizedResponse(
-                    response, requestId, responseEx.getReason());
+                    response, requestId, defaultIfBlank(responseEx.getReason(), "Authentication failed"));
                 case FORBIDDEN -> ProblemDetailsUtil.writeForbiddenResponse(
-                    response, requestId, responseEx.getReason());
+                    response, requestId, defaultIfBlank(responseEx.getReason(), "Access denied"));
                 case SERVICE_UNAVAILABLE -> ProblemDetailsUtil.writeServiceUnavailableResponse(
-                    response, requestId, responseEx.getReason());
-                default -> ProblemDetailsUtil.writeServiceUnavailableResponse(
-                    response, requestId, "Internal server error");
+                    response, requestId, defaultIfBlank(responseEx.getReason(), "Service temporarily unavailable"));
+                default -> ProblemDetailsUtil.writeCustomResponse(
+                    response, status, status.getReasonPhrase(), defaultIfBlank(responseEx.getReason(), status.getReasonPhrase()), requestId);
             };
         }
 
@@ -149,9 +148,13 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
             return ProblemDetailsUtil.writeServiceUnavailableResponse(response, requestId, detail);
         }
 
-        // 기타 모든 예외는 503 Service Unavailable로 처리
-        return ProblemDetailsUtil.writeServiceUnavailableResponse(
-            response, requestId, "Service temporarily unavailable");
+        // 기타 예외는 500 Internal Server Error로 처리
+        return ProblemDetailsUtil.writeCustomResponse(
+            response, HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", "An unexpected error occurred", requestId);
+    }
+
+    private String defaultIfBlank(String value, String defaultValue) {
+        return (value == null || value.isBlank()) ? defaultValue : value;
     }
 
     /**
