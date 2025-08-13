@@ -30,6 +30,7 @@ ext {
 
 dependencies {
     // Core Spring Cloud Gateway (WebFlux 기반)
+    // implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webflux'
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
@@ -44,7 +45,7 @@ dependencies {
     // Service discovery / load balancing (prod with lb:// URIs)
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
     // (Optional) Eureka client
-    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+    // implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client' // Kafka 테스트를 위해 임시 비활성화
 
     // Spring Kafka
     implementation 'org.springframework.kafka:spring-kafka'
@@ -62,7 +63,7 @@ dependencies {
 
     // Load environment variables from .env files
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
-    
+
     // JWT token generation for testing
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -87,6 +88,8 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    testImplementation 'org.testcontainers:kafka'
 }
 
 dependencyManagement {

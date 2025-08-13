@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
@@ -11,6 +12,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -36,11 +38,35 @@ public class RedisConfig {
     @Value("${spring.data.redis.port}")
     private int redisPort;
 
+    /**
+     * Redis Connection Factory 설정
+     * Spring Cloud Gateway Rate Limiter가 사용하는 기본 연결 팩토리
+     */
     @Bean
+    @Primary
     public LettuceConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(
-                new RedisStandaloneConfiguration(redisHost, redisPort)
-        );
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisHost, redisPort);
+        // 필요시 패스워드 설정
+        // config.setPassword("your-password");
+        
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(config);
+        factory.setEagerInitialization(true);
+        return factory;
+    }
+
+    /**
+     * Reactive Redis Connection Factory 설정
+     * Rate Limiter 전용 Reactive 연결 팩토리
+     */
+    @Bean("reactiveRedisConnectionFactory")
+    public ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisHost, redisPort);
+        // 필요시 패스워드 설정
+        // config.setPassword("your-password");
+        
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(config);
+        factory.setEagerInitialization(true);
+        return factory;
     }
 
 //    @Bean
@@ -56,8 +82,9 @@ public class RedisConfig {
 
     // 비동기 Reactive RedisTemplate 설정
     @Bean
-    public ReactiveStringRedisTemplate reactiveStringRedisTemplate(
-            ReactiveRedisConnectionFactory factory) {
+    @Primary
+    public ReactiveStringRedisTemplate reactiveStringRedisTemplate() {
+        ReactiveRedisConnectionFactory factory = reactiveRedisConnectionFactory();
         StringRedisSerializer stringSerializer = new StringRedisSerializer();
         RedisSerializationContext<String, String> context = RedisSerializationContext
                 .<String, String>newSerializationContext()
@@ -66,7 +93,22 @@ public class RedisConfig {
                 .hashKey(stringSerializer)
                 .hashValue(stringSerializer)
                 .build();
-        return new ReactiveStringRedisTemplate(factory);
+        return new ReactiveStringRedisTemplate(factory, context);
+    }
+
+    /**
+     * RedisTemplate for general use
+     */
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new StringRedisSerializer());
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new StringRedisSerializer());
+        template.afterPropertiesSet();
+        return template;
     }
 
     @Bean

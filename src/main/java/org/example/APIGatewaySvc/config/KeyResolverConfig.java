@@ -33,20 +33,24 @@ public class KeyResolverConfig {
     @Primary
     public KeyResolver userKeyResolver() {
         return exchange -> {
-            // Spring Security Context에서 인증 정보 추출
+            // Spring Security Context에서 인증 정보 추출 시도
             return exchange.getPrincipal()
                     .cast(JwtAuthenticationToken.class)
                     .map(JwtAuthenticationToken::getToken)
                     .map(Jwt::getSubject)  // JWT sub 클레임 (사용자 ID)
                     .filter(sub -> sub != null && !sub.trim().isEmpty())
                     .map(sub -> "user:" + sub)  // 사용자 ID 기반 키
+                    .cast(String.class)
                     .switchIfEmpty(
                             // 인증되지 않은 경우 IP 기반 키 사용
                             Mono.fromCallable(() -> {
                                 String clientIP = getClientIP(exchange);
-                                return "ip:" + clientIP;
+                                String key = "ip:" + clientIP;
+                                System.out.println("Rate Limit Key: " + key); // 디버깅용 로그
+                                return key;
                             })
-                    );
+                    )
+                    .doOnNext(key -> System.out.println("Final Rate Limit Key: " + key)); // 디버깅용 로그
         };
     }
 
@@ -122,10 +126,13 @@ public class KeyResolverConfig {
             return false;
         }
         
-        // 로컬호스트 및 사설망 IP 제외 (선택사항)
-        return !ip.startsWith("127.") && 
-               !ip.startsWith("10.") && 
-               !ip.startsWith("192.168.") &&
-               !ip.matches("^172\\.(1[6-9]|2[0-9]|3[0-1])\\..*");
+        // 개발 환경에서는 로컬호스트도 허용
+        // 운영 환경에서는 아래 조건을 활성화하여 사설망 IP 제외
+        // return !ip.startsWith("127.") && 
+        //        !ip.startsWith("10.") && 
+        //        !ip.startsWith("192.168.") &&
+        //        !ip.matches("^172\\.(1[6-9]|2[0-9]|3[0-1])\\..*");
+        
+        return true; // 개발 환경: 모든 유효한 IP 형식 허용
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
@@ -20,6 +21,7 @@ import java.util.Map;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.example.APIGatewaySvc.service.KafkaProducerService;
 
 /**
  * Auth0 OAuth2 로그인 처리를 위한 컨트롤러
@@ -39,9 +41,12 @@ public class AuthController {
     private String audience;
 
     private final ReactiveOAuth2AuthorizedClientService authorizedClientService;
+    private final KafkaProducerService kafkaProducerService;
 
-    public AuthController(ReactiveOAuth2AuthorizedClientService authorizedClientService) {
+    public AuthController(ReactiveOAuth2AuthorizedClientService authorizedClientService,
+                         KafkaProducerService kafkaProducerService) {
         this.authorizedClientService = authorizedClientService;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     /**
@@ -64,62 +69,109 @@ public class AuthController {
                 });
     }
 
-    /**
-     * 강제 새 로그인 (기존 세션 무효화)
-     */
-    @GetMapping("/fresh-login")
-    @Operation(summary = "강제 새 로그인", description = "기존 세션 무효화 후 새 로그인")
-    @ApiResponses({
-        @ApiResponse(responseCode = "302", description = "로그아웃 후 로그인 페이지로 리다이렉트")
-    })
-    public Mono<ResponseEntity<Void>> freshLogin() {
-        String baseIssuer = issuerUri.endsWith("/") ? issuerUri.substring(0, issuerUri.length() - 1) : issuerUri;
-        String logoutUrl = String.format(
-                "%s/v2/logout?client_id=%s&returnTo=%s",
-                baseIssuer,
-                urlEncode(clientId),
-                urlEncode("http://localhost:8080/auth/login-page")
-        );
+//    /**
+//     * 강제 새 로그인 (기존 세션 무효화)
+//     */
+//    @GetMapping("/fresh-login")
+//    @Operation(summary = "강제 새 로그인", description = "기존 세션 무효화 후 새 로그인")
+//    @ApiResponses({
+//        @ApiResponse(responseCode = "302", description = "로그아웃 후 로그인 페이지로 리다이렉트")
+//    })
+//    public Mono<ResponseEntity<Void>> freshLogin() {
+//        String baseIssuer = issuerUri.endsWith("/") ? issuerUri.substring(0, issuerUri.length() - 1) : issuerUri;
+//        String logoutUrl = String.format(
+//                "%s/v2/logout?client_id=%s&returnTo=%s",
+//                baseIssuer,
+//                urlEncode(clientId),
+//                urlEncode("http://localhost:8080/auth/login-page")
+//        );
+//
+//        return Mono.just(ResponseEntity.status(302)
+//                .location(java.net.URI.create(logoutUrl))
+//                .build());
+//    }
 
-        return Mono.just(ResponseEntity.status(302)
-                .location(java.net.URI.create(logoutUrl))
-                .build());
+//    /**
+//     * 로그인 페이지 (로그아웃 후 리다이렉트용)
+//     */
+//    @GetMapping("/login-page")
+//    @Operation(summary = "로그인 페이지", description = "로그아웃 후 자동 로그인 페이지")
+//    @ApiResponses({
+//        @ApiResponse(responseCode = "302", description = "OAuth2 로그인 시작으로 리다이렉트")
+//    })
+//    public Mono<ResponseEntity<Void>> loginPage() {
+//        return Mono.just(ResponseEntity.status(302)
+//                .location(java.net.URI.create("/oauth2/authorization/auth0"))
+//                .build());
+//    }
+
+    /**
+     * 로그아웃 엔드포인트
+     */
+    @PostMapping("/logout")
+    @Operation(summary = "Auth0 로그아웃", description = "Auth0를 통한 로그아웃 실행")
+    @ApiResponses({
+        @ApiResponse(responseCode = "302", description = "Auth0 로그아웃으로 리다이렉트")
+    })
+    public Mono<ResponseEntity<Object>> logout(ServerWebExchange exchange) {
+        // 로그아웃 이벤트를 카프카로 전송
+        return ReactiveSecurityContextHolder.getContext()
+            .cast(org.springframework.security.core.context.SecurityContext.class)
+            .flatMap(securityContext -> {
+                try {
+                    org.springframework.security.core.Authentication authentication = securityContext.getAuthentication();
+                    if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt) {
+                        org.springframework.security.oauth2.jwt.Jwt jwt = (org.springframework.security.oauth2.jwt.Jwt) authentication.getPrincipal();
+                        
+                        Map<String, Object> logoutEvent = new HashMap<>();
+                        logoutEvent.put("eventType", "USER_LOGOUT");
+                        logoutEvent.put("userId", jwt.getClaimAsString("sub"));
+                        logoutEvent.put("timestamp", java.time.Instant.now().toString());
+                        logoutEvent.put("source", "auth0");
+                        
+                        kafkaProducerService.sendAuthEvent(logoutEvent);
+                    }
+                } catch (Exception e) {
+                    // 로그 전송 실패 시 무시
+                }
+                
+                // Spring Security의 logout 메커니즘을 통해 처리됨
+                return exchange.getSession()
+                        .flatMap(session -> {
+                            session.invalidate();
+                            return Mono.just(ResponseEntity.status(302)
+                                    .location(java.net.URI.create("/logout"))
+                                    .build());
+                        });
+            })
+            .onErrorResume(throwable -> {
+                // 인증 정보가 없는 경우에도 로그아웃 진행
+                return exchange.getSession()
+                        .flatMap(session -> {
+                            session.invalidate();
+                            return Mono.just(ResponseEntity.status(302)
+                                    .location(java.net.URI.create("/logout"))
+                                    .build());
+                        });
+            });
     }
 
     /**
-     * 로그인 페이지 (로그아웃 후 리다이렉트용)
+     * 로그아웃 성공 후 처리
      */
-    @GetMapping("/login-page")
-    @Operation(summary = "로그인 페이지", description = "로그아웃 후 자동 로그인 페이지")
+    @GetMapping("/logout-success")
+    @Operation(summary = "로그아웃 성공", description = "Auth0 로그아웃 성공 후 처리")
     @ApiResponses({
-        @ApiResponse(responseCode = "302", description = "OAuth2 로그인 시작으로 리다이렉트")
+        @ApiResponse(responseCode = "200", description = "로그아웃 성공 메시지")
     })
-    public Mono<ResponseEntity<Void>> loginPage() {
-        return Mono.just(ResponseEntity.status(302)
-                .location(java.net.URI.create("/oauth2/authorization/auth0"))
-                .build());
-    }
-
-    /**
-     * 로그아웃
-     */
-    @GetMapping("/logout")
-    @Operation(summary = "로그아웃", description = "Auth0 로그아웃 처리")
-    @ApiResponses({
-        @ApiResponse(responseCode = "302", description = "Auth0 로그아웃 후 홈으로 리다이렉트")
-    })
-    public Mono<ResponseEntity<Void>> logout() {
-        String baseIssuer = issuerUri.endsWith("/") ? issuerUri.substring(0, issuerUri.length() - 1) : issuerUri;
-        String logoutUrl = String.format(
-                "%s/v2/logout?client_id=%s&returnTo=%s",
-                baseIssuer,
-                urlEncode(clientId),
-                urlEncode("http://localhost:8080/")
-        );
-
-        return Mono.just(ResponseEntity.status(302)
-                .location(java.net.URI.create(logoutUrl))
-                .build());
+    public Mono<ResponseEntity<Map<String, Object>>> logoutSuccess() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "로그아웃이 성공적으로 완료되었습니다");
+        response.put("status", "logged_out");
+        response.put("loginUrl", "/auth/login");
+        response.put("timestamp", java.time.Instant.now().toString());
+        
+        return Mono.just(ResponseEntity.ok(response));
     }
 
     /**
@@ -154,6 +206,21 @@ public class AuthController {
         // OIDC id_token
         if (principal.getIdToken() != null) {
             userInfo.put("idToken", principal.getIdToken().getTokenValue());
+        }
+
+        // 사용자 등록/로그인 이벤트를 카프카로 전송
+        try {
+            Map<String, Object> authEvent = new HashMap<>();
+            authEvent.put("eventType", "USER_LOGIN");
+            authEvent.put("userId", principal.getSubject());
+            authEvent.put("email", principal.getEmail());
+            authEvent.put("name", principal.getFullName());
+            authEvent.put("timestamp", java.time.Instant.now().toString());
+            authEvent.put("source", "auth0");
+            
+            kafkaProducerService.sendAuthEvent(authEvent);
+        } catch (Exception e) {
+            // 로그 전송 실패 시 무시 (메인 기능에 영향 없도록)
         }
 
         // access_token 추출 (ReactiveOAuth2AuthorizedClientService 사용)
@@ -192,7 +259,7 @@ public class AuthController {
         error.put("error", "로그인 실패");
         error.put("message", "Auth0 로그인 중 오류가 발생했습니다");
         error.put("retryUrl", "/auth/login");
-        
+
         return Mono.just(ResponseEntity.status(400).body(error));
     }
 

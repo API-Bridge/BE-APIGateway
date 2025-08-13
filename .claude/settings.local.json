@@ -16,7 +16,11 @@
       "Bash(.gradlew.bat test --tests StandardResponseFilterTest)",
       "Bash(gradlew.bat test:*)",
       "Bash(del \"C:\\workspace\\BE-APIGateway\\BLOCK-FEATURE-GUIDE.md\")",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(powershell:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker exec:*)",
+      "Bash(del:*)"
     ],
     "deny": []
   }

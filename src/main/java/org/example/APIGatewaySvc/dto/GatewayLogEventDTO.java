@@ -2,6 +2,8 @@ package org.example.APIGatewaySvc.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.Map;
@@ -10,9 +12,12 @@ import java.util.Map;
  * Gateway 로그 이벤트 모델
  * Kafka 토픽(logs.gateway)으로 전송되는 로그 메시지 구조
  */
+@Setter
+@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class GatewayLogEvent {
-    
+public class GatewayLogEventDTO {
+
+    // Getters and Setters
     @JsonProperty("requestId")
     private String requestId;
     
@@ -68,12 +73,12 @@ public class GatewayLogEvent {
     private Long responseSize; // 응답 크기 (바이트)
     
     // 기본 생성자
-    public GatewayLogEvent() {
+    public GatewayLogEventDTO() {
         this.timestamp = Instant.now();
     }
     
     // 주요 필드 생성자
-    public GatewayLogEvent(String eventType, String requestId) {
+    public GatewayLogEventDTO(String eventType, String requestId) {
         this();
         this.eventType = eventType;
         this.requestId = requestId;
@@ -83,65 +88,10 @@ public class GatewayLogEvent {
     public static Builder builder() {
         return new Builder();
     }
-    
-    // Getters and Setters
-    public String getRequestId() { return requestId; }
-    public void setRequestId(String requestId) { this.requestId = requestId; }
-    
-    public Instant getTimestamp() { return timestamp; }
-    public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
-    
-    public String getEventType() { return eventType; }
-    public void setEventType(String eventType) { this.eventType = eventType; }
-    
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
-    
-    public String getIp() { return ip; }
-    public void setIp(String ip) { this.ip = ip; }
-    
-    public String getMethod() { return method; }
-    public void setMethod(String method) { this.method = method; }
-    
-    public String getPath() { return path; }
-    public void setPath(String path) { this.path = path; }
-    
-    public String getRouteId() { return routeId; }
-    public void setRouteId(String routeId) { this.routeId = routeId; }
-    
-    public Integer getStatus() { return status; }
-    public void setStatus(Integer status) { this.status = status; }
-    
-    public Long getDurationMs() { return durationMs; }
-    public void setDurationMs(Long durationMs) { this.durationMs = durationMs; }
-    
-    public String getPublicApiName() { return publicApiName; }
-    public void setPublicApiName(String publicApiName) { this.publicApiName = publicApiName; }
-    
-    public String getUserAgent() { return userAgent; }
-    public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
-    
-    public String getReferer() { return referer; }
-    public void setReferer(String referer) { this.referer = referer; }
-    
-    public String getErrorMessage() { return errorMessage; }
-    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
-    
-    public String getErrorType() { return errorType; }
-    public void setErrorType(String errorType) { this.errorType = errorType; }
-    
-    public Map<String, String> getHeaders() { return headers; }
-    public void setHeaders(Map<String, String> headers) { this.headers = headers; }
-    
-    public Long getRequestSize() { return requestSize; }
-    public void setRequestSize(Long requestSize) { this.requestSize = requestSize; }
-    
-    public Long getResponseSize() { return responseSize; }
-    public void setResponseSize(Long responseSize) { this.responseSize = responseSize; }
-    
+
     // Builder 클래스
     public static class Builder {
-        private GatewayLogEvent event = new GatewayLogEvent();
+        private GatewayLogEventDTO event = new GatewayLogEventDTO();
         
         public Builder requestId(String requestId) {
             event.setRequestId(requestId);
@@ -238,7 +188,7 @@ public class GatewayLogEvent {
             return this;
         }
         
-        public GatewayLogEvent build() {
+        public GatewayLogEventDTO build() {
             return event;
         }
     }

@@ -22,13 +22,13 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">10</div>
+<div class="counter">40</div>
 <p>tests</p>
 </div>
 </td>
 <td>
 <div class="infoBox" id="failures">
-<div class="counter">0</div>
+<div class="counter">18</div>
 <p>failures</p>
 </div>
 </td>
@@ -40,7 +40,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">4.061s</div>
+<div class="counter">1.147s</div>
 <p>duration</p>
 </div>
 </td>
@@ -49,8 +49,8 @@
 </div>
 </td>
 <td>
-<div class="infoBox success" id="successRate">
-<div class="percent">100%</div>
+<div class="infoBox failures" id="successRate">
+<div class="percent">55%</div>
 <p>successful</p>
 </div>
 </td>
@@ -60,9 +60,89 @@
 <div class="tab-container">
 <ul class="tabLinks">
 <li>
+<a href="#">Failed tests</a>
+</li>
+<li>
 <a href="#">Classes</a>
 </li>
 </ul>
+<div class="tab">
+<h2>Failed tests</h2>
+<ul class="linkList">
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldAllowRequestWhenNotBlocked()">shouldAllowRequestWhenNotBlocked()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldBlockRequestWhenAPIKeyIsBlocked()">shouldBlockRequestWhenAPIKeyIsBlocked()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldBlockRequestWhenIPIsBlocked()">shouldBlockRequestWhenIPIsBlocked()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldBlockRequestWhenUserIsBlocked()">shouldBlockRequestWhenUserIsBlocked()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldExtractIPFromXForwardedFor()">shouldExtractIPFromXForwardedFor()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldHaveHighestPrecedence()">shouldHaveHighestPrecedence()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.html">RateLimitHeadersFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.html#shouldHandleNoRateLimitKey()">shouldHandleNoRateLimitKey()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.html">RateLimitHeadersFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.html#shouldHandleRedisError()">shouldHandleRedisError()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testArrayResponseWrapping()">testArrayResponseWrapping()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testErrorResponseWrapping()">testErrorResponseWrapping()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testNonJsonResponseHandling()">testNonJsonResponseHandling()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testProcessingTimeMeasurement()">testProcessingTimeMeasurement()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testRateLimitErrorWrapping()">testRateLimitErrorWrapping()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testRequestIdPropagation()">testRequestIdPropagation()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testServerErrorWrapping()">testServerErrorWrapping()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testSkipWrappingForAuthPaths()">testSkipWrappingForAuthPaths()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testSkipWrappingForPublicPaths()">testSkipWrappingForPublicPaths()</a>
+</li>
+<li>
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testSuccessfulResponseWrapping()">testSuccessfulResponseWrapping()</a>
+</li>
+</ul>
+</div>
 <div class="tab">
 <h2>Classes</h2>
 <table>
@@ -77,14 +157,54 @@
 </tr>
 </thead>
 <tr>
+<td class="failures">
+<a href="../classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>
+</td>
+<td>6</td>
+<td>6</td>
+<td>0</td>
+<td>0.537s</td>
+<td class="failures">0%</td>
+</tr>
+<tr>
 <td class="success">
 <a href="../classes/org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest.html">GatewayLoggingFilterTest</a>
 </td>
 <td>10</td>
 <td>0</td>
 <td>0</td>
-<td>4.061s</td>
+<td>0.341s</td>
 <td class="success">100%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="../classes/org.example.APIGatewaySvc.filter.JwtAuthenticationFilterTest.html">JwtAuthenticationFilterTest</a>
+</td>
+<td>6</td>
+<td>0</td>
+<td>0</td>
+<td>0.187s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="../classes/org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.html">RateLimitHeadersFilterTest</a>
+</td>
+<td>8</td>
+<td>2</td>
+<td>0</td>
+<td>0.075s</td>
+<td class="failures">75%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="../classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>
+</td>
+<td>10</td>
+<td>10</td>
+<td>0</td>
+<td>0.007s</td>
+<td class="failures">0%</td>
 </tr>
 </table>
 </div>
@@ -96,7 +216,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="https://www.gradle.org">Gradle 8.14.3</a> at 2025. 8. 12. 오전 2:20:10</p>
+<a href="https://www.gradle.org">Gradle 8.14.3</a> at 2025. 8. 13. 오후 10:37:06</p>
 </div>
 </div>
 </body>

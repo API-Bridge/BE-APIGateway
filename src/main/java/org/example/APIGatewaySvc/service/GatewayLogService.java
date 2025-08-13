@@ -1,7 +1,6 @@
 package org.example.APIGatewaySvc.service;
 
-import org.example.APIGatewaySvc.dto.GatewayLogEvent;
-import org.example.APIGatewaySvc.util.SecurityMaskingUtil;
+import org.example.APIGatewaySvc.dto.GatewayLogEventDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +40,7 @@ public class GatewayLogService {
      * 로그 이벤트를 Kafka로 비동기 전송
      * @param logEvent 로그 이벤트
      */
-    public void sendLogEvent(GatewayLogEvent logEvent) {
+    public void sendLogEvent(GatewayLogEventDTO logEvent) {
         if (!loggingEnabled) {
             return;
         }
@@ -90,9 +89,9 @@ public class GatewayLogService {
                                String userId, String userAgent, String referer, String routeId,
                                String publicApiName, Map<String, String> headers) {
         
-        GatewayLogEvent logEvent = GatewayLogEvent.builder()
+        GatewayLogEventDTO logEvent = GatewayLogEventDTO.builder()
             .requestId(requestId)
-            .eventType(GatewayLogEvent.EventType.REQUEST_START)
+            .eventType(GatewayLogEventDTO.EventType.REQUEST_START)
             .method(method)
             .path(path)
             .ip(ip)
@@ -115,9 +114,9 @@ public class GatewayLogService {
      * @param responseSize 응답 크기
      */
     public void logRequestEnd(String requestId, Integer status, Long durationMs, Long responseSize) {
-        GatewayLogEvent logEvent = GatewayLogEvent.builder()
+        GatewayLogEventDTO logEvent = GatewayLogEventDTO.builder()
             .requestId(requestId)
-            .eventType(GatewayLogEvent.EventType.REQUEST_END)
+            .eventType(GatewayLogEventDTO.EventType.REQUEST_END)
             .status(status)
             .durationMs(durationMs)
             .responseSize(responseSize)
@@ -136,9 +135,9 @@ public class GatewayLogService {
      */
     public void logRequestError(String requestId, Integer status, Long durationMs, 
                                String errorMessage, String errorType) {
-        GatewayLogEvent logEvent = GatewayLogEvent.builder()
+        GatewayLogEventDTO logEvent = GatewayLogEventDTO.builder()
             .requestId(requestId)
-            .eventType(GatewayLogEvent.EventType.REQUEST_ERROR)
+            .eventType(GatewayLogEventDTO.EventType.REQUEST_ERROR)
             .status(status)
             .durationMs(durationMs)
             .errorMessage(errorMessage)
@@ -152,7 +151,7 @@ public class GatewayLogService {
      * 로그 이벤트의 민감 정보 마스킹 처리
      * @param logEvent 로그 이벤트
      */
-    private void maskSensitiveInformation(GatewayLogEvent logEvent) {
+    private void maskSensitiveInformation(GatewayLogEventDTO logEvent) {
         // 헤더에서 민감 정보 마스킹
         if (logEvent.getHeaders() != null) {
             Map<String, String> maskedHeaders = new HashMap<>();
@@ -215,7 +214,7 @@ public class GatewayLogService {
      * @param logEvent 전송 실패한 로그 이벤트
      * @param exception 발생한 예외
      */
-    private void handleKafkaFailure(GatewayLogEvent logEvent, Throwable exception) {
+    private void handleKafkaFailure(GatewayLogEventDTO logEvent, Throwable exception) {
         // 로컬 로그에 WARN 레벨로 기록하고 무시 (요구사항에 따라)
         logger.warn("Failed to send log event to Kafka: requestId={}, eventType={}, error={}", 
             logEvent.getRequestId(), logEvent.getEventType(), exception.getMessage());

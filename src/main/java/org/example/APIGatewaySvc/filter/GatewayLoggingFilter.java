@@ -1,6 +1,5 @@
 package org.example.APIGatewaySvc.filter;
 
-import org.example.APIGatewaySvc.dto.GatewayLogEvent;
 import org.example.APIGatewaySvc.service.GatewayLogService;
 import org.example.APIGatewaySvc.util.SecurityMaskingUtil;
 import org.slf4j.Logger;
@@ -22,7 +21,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Gateway 요청/응답 로깅 필터
@@ -239,6 +237,10 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
             return "AI Feature API";
         } else if (path.startsWith("/gateway/sysmgmt")) {
             return "System Management API";
+        } else if (path.startsWith("/mock/users")) {
+            return "Mock Users API";
+        } else if (path.startsWith("/mock/apimgmt")) {
+            return "Mock API Management";
         } else if (path.startsWith("/public")) {
             return "Public API";
         } else if (path.startsWith("/internal")) {

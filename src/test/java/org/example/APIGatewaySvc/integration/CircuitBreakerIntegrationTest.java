@@ -127,7 +127,7 @@ class CircuitBreakerIntegrationTest {
         assertEquals(20, circuitBreaker.getCircuitBreakerConfig().getSlidingWindowSize());
         assertEquals(10, circuitBreaker.getCircuitBreakerConfig().getMinimumNumberOfCalls());
         assertEquals(50.0f, circuitBreaker.getCircuitBreakerConfig().getFailureRateThreshold());
-        assertEquals(Duration.ofSeconds(10), circuitBreaker.getCircuitBreakerConfig().getWaitDurationInOpenState());
+        assertEquals(Duration.ofSeconds(10), circuitBreaker.getCircuitBreakerConfig().getWaitIntervalFunctionInOpenState().apply(1));
     }
 
     @Test

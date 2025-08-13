@@ -53,6 +53,9 @@ public class SecurityConfig {
     @Value("${auth0.issuerUri}")
     private String issuer;
 
+    @Value("${auth0.logout-redirect-uri}")
+    private String logoutRedirectUri;
+
     // 테스트 모드일 때 TestJwtConfig의 디코더를 주입받기 위함
     @Autowired(required = false)
     private ReactiveJwtDecoder testReactiveJwtDecoder;
@@ -112,21 +115,23 @@ public class SecurityConfig {
 
                                 // 기타 공개 경로들
                                 .pathMatchers("/favicon.ico").permitAll()
-                                .pathMatchers(HttpMethod.GET, "/actuator/health", "/actuator/info").permitAll()
-                                .pathMatchers("/test/health").permitAll()
+                                .pathMatchers("/actuator/health", "/actuator/info").permitAll()
+                                .pathMatchers("/test/**").permitAll()      // 모든 테스트 엔드포인트 허용
+                                .pathMatchers("/mock/**").permitAll()      // 모든 목업 마이크로서비스 허용
                                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
                                 .pathMatchers("/error").permitAll()
                                 .pathMatchers("/").permitAll()
 
-                                // --- 관리자만 접근 가능한 actuator 경로는 permitAll()보다 뒤에 위치 ---
-                                .pathMatchers(HttpMethod.GET, "/actuator/**").hasRole("ADMIN")
-                                .pathMatchers("/actuator/**").denyAll()
+                                // --- 관리자용 actuator 경로 ---
+                                .pathMatchers("/actuator/**").permitAll()  // 개발환경에서는 모든 actuator 허용
 
                                 // --- 나머지 모든 요청은 인증 필요 (가장 마지막에 배치) ---
                                 .anyExchange().authenticated()
                 )
-                // OAuth2 Login 설정 활성화
+                // OAuth2 Login 설정 활성화 (인증이 필요한 요청에만 적용)
                 .oauth2Login(oauth2 -> oauth2
+                        // Authorization Request Resolver 설정
+                        .authorizationRequestResolver(authorizationRequestResolver())
                         // OAuth2 로그인 성공/실패 핸들러 설정
                         // 로그인 성공 시 /auth/login-success로 리다이렉트
                         .authenticationSuccessHandler((exchange, authentication) -> {
@@ -144,9 +149,10 @@ public class SecurityConfig {
                                 org.springframework.http.HttpStatus.FOUND);
                             return reactor.core.publisher.Mono.empty();
                         })
+                        // OAuth2 로그인 기본 설정 사용
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/auth/logout") // 로그아웃 URL을 명시
+                        .logoutUrl("/auth/logout") // 로그아웃 URL을 명시 (기본적으로 POST만 지원)
                         .logoutSuccessHandler(oidcLogoutSuccessHandler) // <-- Bean으로 등록한 핸들러 사용
                 )
 
@@ -160,7 +166,18 @@ public class SecurityConfig {
                             // JWT 검증 실패 시 401 Unauthorized 응답
                             exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
                             exchange.getResponse().getHeaders().add("Content-Type", "application/json");
-                            String errorMessage = "{\"error\":\"Unauthorized\",\"message\":\"Invalid or missing JWT token\"}";
+                            String errorMessage = """
+                                {
+                                    "error": "Unauthorized",
+                                    "message": "Invalid JWT token", 
+                                    "status": 401,
+                                    "timestamp": "%s",
+                                    "path": "%s"
+                                }
+                                """.formatted(
+                                    java.time.Instant.now().toString(),
+                                    exchange.getRequest().getURI().getPath()
+                                );
                             org.springframework.core.io.buffer.DataBuffer buffer = 
                                 exchange.getResponse().bufferFactory().wrap(errorMessage.getBytes());
                             return exchange.getResponse().writeWith(reactor.core.publisher.Mono.just(buffer));
@@ -178,7 +195,8 @@ public class SecurityConfig {
     public OidcClientInitiatedServerLogoutSuccessHandler oidcLogoutSuccessHandler() {
         OidcClientInitiatedServerLogoutSuccessHandler successHandler =
                 new OidcClientInitiatedServerLogoutSuccessHandler(this.clientRegistrationRepository);
-        successHandler.setPostLogoutRedirectUri(String.valueOf(java.net.URI.create("/")));
+        // 로그아웃 후 리다이렉트할 URI 설정
+        successHandler.setPostLogoutRedirectUri(logoutRedirectUri);
         return successHandler;
     }
 
@@ -249,6 +267,26 @@ public class SecurityConfig {
         jwtConverter.setJwtGrantedAuthoritiesConverter(reactiveAuthoritiesConverter);
 
         return jwtConverter;
+    }
+
+    /**
+     * OAuth2 Authorization Request Resolver 설정
+     * Auth0 특화 설정을 위한 커스텀 리졸버
+     */
+    @Bean
+    public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver() {
+        DefaultServerOAuth2AuthorizationRequestResolver resolver = 
+            new DefaultServerOAuth2AuthorizationRequestResolver(this.clientRegistrationRepository);
+        
+        // Auth0 특화 설정
+        resolver.setAuthorizationRequestCustomizer(customizer -> {
+            // audience 파라미터 추가 (Auth0 API 접근용)
+            customizer.additionalParameters(params -> {
+                params.put("audience", audience);
+            });
+        });
+        
+        return resolver;
     }
 
 }

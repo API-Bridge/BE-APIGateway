@@ -20,25 +20,25 @@
 <tr>
 <td>
 <div class="infoBox" id="tests">
-<div class="counter">18</div>
+<div class="counter">176</div>
 <p>tests</p>
 </div>
 </td>
 <td>
 <div class="infoBox" id="failures">
-<div class="counter">0</div>
+<div class="counter">73</div>
 <p>failures</p>
 </div>
 </td>
 <td>
 <div class="infoBox" id="ignored">
-<div class="counter">0</div>
+<div class="counter">21</div>
 <p>ignored</p>
 </div>
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">4.602s</div>
+<div class="counter">5.345s</div>
 <p>duration</p>
 </div>
 </td>
@@ -47,8 +47,8 @@
 </div>
 </td>
 <td>
-<div class="infoBox success" id="successRate">
-<div class="percent">100%</div>
+<div class="infoBox failures" id="successRate">
+<div class="percent">52%</div>
 <p>successful</p>
 </div>
 </td>
@@ -58,12 +58,404 @@
 <div class="tab-container">
 <ul class="tabLinks">
 <li>
+<a href="#">Failed tests</a>
+</li>
+<li>
+<a href="#">Ignored tests</a>
+</li>
+<li>
 <a href="#">Packages</a>
 </li>
 <li>
 <a href="#">Classes</a>
 </li>
 </ul>
+<div class="tab">
+<h2>Failed tests</h2>
+<ul class="linkList">
+<li>
+<a href="classes/org.example.APIGatewaySvc.config.EnvironmentConfigTest.html">EnvironmentConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.config.EnvironmentConfigTest.html#testEnvironmentChecker()">testEnvironmentChecker()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.config.EnvironmentConfigTest.html">EnvironmentConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.config.EnvironmentConfigTest.html#testEnvironmentVariablesLoaded()">testEnvironmentVariablesLoaded()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.config.KeyResolverConfigTest.html">KeyResolverConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.config.KeyResolverConfigTest.html#shouldFilterPrivateIpAndUseRemoteAddress()">사설망 IP는 필터링되고 RemoteAddress를 사용해야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.controller.InternalBlockControllerTest.html">InternalBlockControllerTest</a>.
+<a href="classes/org.example.APIGatewaySvc.controller.InternalBlockControllerTest.html#shouldCheckIfUserIsNotBlocked()">shouldCheckIfUserIsNotBlocked()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.controller.InternalBlockControllerTest.html">InternalBlockControllerTest</a>.
+<a href="classes/org.example.APIGatewaySvc.controller.InternalBlockControllerTest.html#shouldRejectInvalidBlockType()">shouldRejectInvalidBlockType()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.controller.InternalBlockControllerTest.html">InternalBlockControllerTest</a>.
+<a href="classes/org.example.APIGatewaySvc.controller.InternalBlockControllerTest.html#shouldReturnNotFoundWhenUnblockingNonExistentBlock()">shouldReturnNotFoundWhenUnblockingNonExistentBlock()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.controller.InternalBlockControllerTest.html">InternalBlockControllerTest</a>.
+<a href="classes/org.example.APIGatewaySvc.controller.InternalBlockControllerTest.html#shouldUnblockSuccessfully()">shouldUnblockSuccessfully()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldAllowRequestWhenNotBlocked()">shouldAllowRequestWhenNotBlocked()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldBlockRequestWhenAPIKeyIsBlocked()">shouldBlockRequestWhenAPIKeyIsBlocked()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldBlockRequestWhenIPIsBlocked()">shouldBlockRequestWhenIPIsBlocked()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldBlockRequestWhenUserIsBlocked()">shouldBlockRequestWhenUserIsBlocked()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldExtractIPFromXForwardedFor()">shouldExtractIPFromXForwardedFor()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">BlockCheckFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html#shouldHaveHighestPrecedence()">shouldHaveHighestPrecedence()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.html">RateLimitHeadersFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.html#shouldHandleNoRateLimitKey()">shouldHandleNoRateLimitKey()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.html">RateLimitHeadersFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.html#shouldHandleRedisError()">shouldHandleRedisError()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testArrayResponseWrapping()">testArrayResponseWrapping()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testErrorResponseWrapping()">testErrorResponseWrapping()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testNonJsonResponseHandling()">testNonJsonResponseHandling()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testProcessingTimeMeasurement()">testProcessingTimeMeasurement()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testRateLimitErrorWrapping()">testRateLimitErrorWrapping()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testRequestIdPropagation()">testRequestIdPropagation()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testServerErrorWrapping()">testServerErrorWrapping()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testSkipWrappingForAuthPaths()">testSkipWrappingForAuthPaths()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testSkipWrappingForPublicPaths()">testSkipWrappingForPublicPaths()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">StandardResponseDTOFilterTest</a>.
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html#testSuccessfulResponseWrapping()">testSuccessfulResponseWrapping()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">ApiGatewayIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html#testApiDocsEndpoint()">testApiDocsEndpoint()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">ApiGatewayIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html#testAuth0ConfigEndpoint()">testAuth0ConfigEndpoint()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">ApiGatewayIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html#testAuthLoginRedirect()">testAuthLoginRedirect()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">ApiGatewayIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html#testCorsOptions()">testCorsOptions()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">ApiGatewayIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html#testEnvironmentVariableInjection()">testEnvironmentVariableInjection()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">ApiGatewayIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html#testHealthEndpoint()">testHealthEndpoint()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">ApiGatewayIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html#testKafkaHealthEndpoint()">testKafkaHealthEndpoint()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">ApiGatewayIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html#testProtectedEndpointWithoutToken()">testProtectedEndpointWithoutToken()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">ApiGatewayIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html#testRootEndpoint()">testRootEndpoint()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">ApiGatewayIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html#testSwaggerUiEndpoint()">testSwaggerUiEndpoint()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testAuth0ConfigEndpoint()">Auth0 설정 정보 조회 - 인증 없이 접근 가능</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testCircuitBreakerWhenDownstreamServiceFails()">다운스트림 서비스 오류 시 Circuit Breaker 동작 확인</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testCorsHeaders()">CORS 헤더 확인 - OPTIONS 요청</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testExpiredJwtToken()">만료된 JWT 토큰으로 API 접근 - 401 Unauthorized</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testInvalidJwtToken()">무효한 JWT 토큰으로 API 접근 - 401 Unauthorized</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testJwtTokenWithWrongAudience()">잘못된 Audience를 가진 JWT 토큰 - 401 Unauthorized</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testRateLimiting()">Rate Limiting 동작 확인 - 과도한 요청 시 429 응답</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testStaticResourceAccess()">정적 리소스 접근 - auth-test.html 페이지</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testUnauthorizedAccessToProtectedEndpoint()">JWT 토큰 없이 보호된 엔드포인트 접근 - 401 Unauthorized</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testValidJwtTokenToAiFeatureApi()">유효한 JWT 토큰으로 AI Feature API 접근</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testValidJwtTokenToApiMgmtApi()">유효한 JWT 토큰으로 API Management API 접근</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testValidJwtTokenToCustomApiMgmtApi()">유효한 JWT 토큰으로 Custom API Management API 접근</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testValidJwtTokenToSysMgmtApi()">유효한 JWT 토큰으로 System Management API 접근</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">Auth0 JWT 인증 및 API 라우팅 통합 테스트</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html#testValidJwtTokenToUsersApi()">유효한 JWT 토큰으로 Users API 접근</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html">BlockFeatureIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html#shouldBlockAPIKey()">shouldBlockAPIKey()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html">BlockFeatureIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html#shouldBlockAndUnblockUser()">shouldBlockAndUnblockUser()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html">BlockFeatureIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html#shouldBlockIP()">shouldBlockIP()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html">BlockFeatureIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html#shouldReturnBadRequestForInvalidType()">shouldReturnBadRequestForInvalidType()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html">BlockFeatureIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html#shouldReturnNotFoundWhenUnblockingNonExistentBlock()">shouldReturnNotFoundWhenUnblockingNonExistentBlock()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html">BlockFeatureIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html#shouldTestTTLExpiration()">shouldTestTTLExpiration()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">CircuitBreakerIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html#shouldExposeCircuitBreakerMetrics()">shouldExposeCircuitBreakerMetrics()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">CircuitBreakerIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html#shouldExposePrometheusMetrics()">shouldExposePrometheusMetrics()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">CircuitBreakerIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html#shouldHandleSlowCalls()">shouldHandleSlowCalls()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">CircuitBreakerIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html#shouldHaveCorrectCircuitBreakerConfiguration()">shouldHaveCorrectCircuitBreakerConfiguration()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">CircuitBreakerIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html#shouldHaveHealthIndicatorEnabled()">shouldHaveHealthIndicatorEnabled()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">CircuitBreakerIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html#shouldRecordFailedCalls()">shouldRecordFailedCalls()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">CircuitBreakerIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html#shouldRecordSuccessfulCalls()">shouldRecordSuccessfulCalls()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">CircuitBreakerIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html#shouldReturnFallbackWhenCircuitBreakerIsOpen()">shouldReturnFallbackWhenCircuitBreakerIsOpen()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">CircuitBreakerIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html#shouldReturnNormalResponseWhenCircuitBreakerIsClosed()">shouldReturnNormalResponseWhenCircuitBreakerIsClosed()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">CircuitBreakerIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html#shouldTransitionToHalfOpenAfterWaitDuration()">shouldTransitionToHalfOpenAfterWaitDuration()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html">LoginAttemptIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html#shouldBlockUserAfterMaxAttempts()">shouldBlockUserAfterMaxAttempts()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html">LoginAttemptIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html#shouldHandleHighVolumeRequests()">shouldHandleHighVolumeRequests()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html">LoginAttemptIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html#shouldIntegrateWithBlockSystem()">shouldIntegrateWithBlockSystem()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html">LoginAttemptIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html#shouldResetAttemptCount()">shouldResetAttemptCount()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html">LoginAttemptIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html#shouldTrackIpAttempts()">shouldTrackIpAttempts()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html">LoginAttemptIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html#shouldTrackLoginAttempts()">shouldTrackLoginAttempts()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.service.KafkaProducerServiceTest.html">KafkaProducerServiceTest</a>.
+<a href="classes/org.example.APIGatewaySvc.service.KafkaProducerServiceTest.html#testSendMessageSyncSuccess()">testSendMessageSyncSuccess()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.service.LoginAttemptServiceTest.html">LoginAttemptServiceTest</a>.
+<a href="classes/org.example.APIGatewaySvc.service.LoginAttemptServiceTest.html#shouldRecordLoginSuccess()">shouldRecordLoginSuccess()</a>
+</li>
+</ul>
+</div>
+<div class="tab">
+<h2>Ignored tests</h2>
+<ul class="linkList">
+<li>
+<a href="classes/org.example.APIGatewaySvc.APIGatewaySvcApplicationTests.html">APIGatewaySvcApplicationTests</a>.
+<a href="classes/org.example.APIGatewaySvc.APIGatewaySvcApplicationTests.html#contextLoads()">contextLoads()</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldApplyRateLimiting()">Rate Limiting이 올바르게 적용되어야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldHaveIndependentRateLimitsPerUser()">서로 다른 사용자는 독립적인 Rate Limit을 가져야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldIncludeGatewayTimestamp()">Gateway 타임스탬프 헤더가 모든 응답에 포함되어야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRemoveCookieHeaders()">Cookie 헤더가 제거되어야 함 (보안)</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldReturn401WithoutJWTForProtectedRoutes()">JWT 토큰 없이 보호된 경로 접근 시 401 에러 반환</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldReturn404ForNonExistentRoute()">존재하지 않는 라우트는 404 에러를 반환해야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRouteToAIFeatureService()">AI Feature Service 라우팅이 올바르게 동작해야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRouteToAPIManagementService()">API Management Service 라우팅이 올바르게 동작해야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRouteToCustomAPIManagementService()">Custom API Management Service 라우팅이 올바르게 동작해야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRouteToSystemManagementService()">System Management Service 라우팅이 올바르게 동작해야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">GatewayRoutingIntegrationTest</a>.
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html#shouldRouteToUserService()">User Service 라우팅이 올바르게 동작해야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#corsShouldBeConfiguredCorrectly()">CORS 설정이 올바르게 적용되어야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#expiredJWTShouldReturn401()">만료된 JWT 토큰은 401 에러 반환</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#invalidAudienceJWTShouldReturn401()">잘못된 오디언스의 JWT 토큰은 401 에러 반환</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#malformedJWTShouldReturn401()">잘못된 형식의 JWT 토큰은 401 에러 반환</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#protectedEndpointsShouldReturn401WithoutJWT()">보호된 경로는 JWT 토큰 없이 접근 시 401 에러 반환</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#publicEndpointsShouldBeAccessibleWithoutAuthentication()">공개 경로는 인증 없이 접근 가능해야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#requestIdShouldBeIncludedInAllResponses()">Request ID가 모든 응답에 포함되어야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#sensitiveInformationShouldNotBeExposedInErrorResponse()">민감한 정보가 에러 응답에 포함되지 않아야 함</a>
+</li>
+<li>
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">SecurityConfigTest</a>.
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html#validJWTShouldAllowAccessToProtectedRoutes()">유효한 JWT 토큰으로 보호된 경로 접근 시 라우팅 됨</a>
+</li>
+</ul>
+</div>
 <div class="tab">
 <h2>Packages</h2>
 <table>
@@ -79,23 +471,93 @@
 </thead>
 <tbody>
 <tr>
-<td class="success">
+<td class="skipped">
+<a href="packages/org.example.APIGatewaySvc.html">org.example.APIGatewaySvc</a>
+</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0s</td>
+<td class="skipped">-</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="packages/org.example.APIGatewaySvc.config.html">org.example.APIGatewaySvc.config</a>
+</td>
+<td>17</td>
+<td>3</td>
+<td>0</td>
+<td>2.730s</td>
+<td class="failures">82%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="packages/org.example.APIGatewaySvc.controller.html">org.example.APIGatewaySvc.controller</a>
+</td>
+<td>8</td>
+<td>4</td>
+<td>0</td>
+<td>0.773s</td>
+<td class="failures">50%</td>
+</tr>
+<tr>
+<td class="failures">
 <a href="packages/org.example.APIGatewaySvc.filter.html">org.example.APIGatewaySvc.filter</a>
 </td>
-<td>10</td>
+<td>40</td>
+<td>18</td>
 <td>0</td>
+<td>1.147s</td>
+<td class="failures">55%</td>
+</tr>
+<tr>
+<td class="skipped">
+<a href="packages/org.example.APIGatewaySvc.gateway.html">org.example.APIGatewaySvc.gateway</a>
+</td>
+<td>11</td>
 <td>0</td>
-<td>4.061s</td>
-<td class="success">100%</td>
+<td>11</td>
+<td>0s</td>
+<td class="skipped">-</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="packages/org.example.APIGatewaySvc.integration.html">org.example.APIGatewaySvc.integration</a>
+</td>
+<td>46</td>
+<td>46</td>
+<td>0</td>
+<td>0.018s</td>
+<td class="failures">0%</td>
+</tr>
+<tr>
+<td class="skipped">
+<a href="packages/org.example.APIGatewaySvc.security.html">org.example.APIGatewaySvc.security</a>
+</td>
+<td>9</td>
+<td>0</td>
+<td>9</td>
+<td>0s</td>
+<td class="skipped">-</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="packages/org.example.APIGatewaySvc.service.html">org.example.APIGatewaySvc.service</a>
+</td>
+<td>24</td>
+<td>2</td>
+<td>0</td>
+<td>0.430s</td>
+<td class="failures">91%</td>
 </tr>
 <tr>
 <td class="success">
-<a href="packages/org.example.APIGatewaySvc.service.html">org.example.APIGatewaySvc.service</a>
+<a href="packages/org.example.APIGatewaySvc.util.html">org.example.APIGatewaySvc.util</a>
 </td>
-<td>8</td>
+<td>20</td>
 <td>0</td>
 <td>0</td>
-<td>0.541s</td>
+<td>0.247s</td>
 <td class="success">100%</td>
 </tr>
 </tbody>
@@ -116,14 +578,174 @@
 </thead>
 <tbody>
 <tr>
+<td class="skipped">
+<a href="classes/org.example.APIGatewaySvc.APIGatewaySvcApplicationTests.html">org.example.APIGatewaySvc.APIGatewaySvcApplicationTests</a>
+</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0s</td>
+<td class="skipped">-</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.config.EnvironmentConfigTest.html">org.example.APIGatewaySvc.config.EnvironmentConfigTest</a>
+</td>
+<td>2</td>
+<td>2</td>
+<td>0</td>
+<td>0.016s</td>
+<td class="failures">0%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.config.KeyResolverConfigTest.html">org.example.APIGatewaySvc.config.KeyResolverConfigTest</a>
+</td>
+<td>9</td>
+<td>1</td>
+<td>0</td>
+<td>2.303s</td>
+<td class="failures">88%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="classes/org.example.APIGatewaySvc.config.RateLimitConfigTest.html">org.example.APIGatewaySvc.config.RateLimitConfigTest</a>
+</td>
+<td>6</td>
+<td>0</td>
+<td>0</td>
+<td>0.411s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.controller.InternalBlockControllerTest.html">org.example.APIGatewaySvc.controller.InternalBlockControllerTest</a>
+</td>
+<td>8</td>
+<td>4</td>
+<td>0</td>
+<td>0.773s</td>
+<td class="failures">50%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.filter.BlockCheckFilterTest.html">org.example.APIGatewaySvc.filter.BlockCheckFilterTest</a>
+</td>
+<td>6</td>
+<td>6</td>
+<td>0</td>
+<td>0.537s</td>
+<td class="failures">0%</td>
+</tr>
+<tr>
 <td class="success">
 <a href="classes/org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest.html">org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest</a>
 </td>
 <td>10</td>
 <td>0</td>
 <td>0</td>
-<td>4.061s</td>
+<td>0.341s</td>
 <td class="success">100%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="classes/org.example.APIGatewaySvc.filter.JwtAuthenticationFilterTest.html">org.example.APIGatewaySvc.filter.JwtAuthenticationFilterTest</a>
+</td>
+<td>6</td>
+<td>0</td>
+<td>0</td>
+<td>0.187s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.html">org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest</a>
+</td>
+<td>8</td>
+<td>2</td>
+<td>0</td>
+<td>0.075s</td>
+<td class="failures">75%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest.html">org.example.APIGatewaySvc.filter.StandardResponseDTOFilterTest</a>
+</td>
+<td>10</td>
+<td>10</td>
+<td>0</td>
+<td>0.007s</td>
+<td class="failures">0%</td>
+</tr>
+<tr>
+<td class="skipped">
+<a href="classes/org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest.html">org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest</a>
+</td>
+<td>11</td>
+<td>0</td>
+<td>11</td>
+<td>0s</td>
+<td class="skipped">-</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest.html">org.example.APIGatewaySvc.integration.ApiGatewayIntegrationTest</a>
+</td>
+<td>10</td>
+<td>10</td>
+<td>0</td>
+<td>0.004s</td>
+<td class="failures">0%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.integration.AuthTestIntegrationTest.html">org.example.APIGatewaySvc.integration.AuthTestIntegrationTest</a>
+</td>
+<td>14</td>
+<td>14</td>
+<td>0</td>
+<td>0.006s</td>
+<td class="failures">0%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest.html">org.example.APIGatewaySvc.integration.BlockFeatureIntegrationTest</a>
+</td>
+<td>6</td>
+<td>6</td>
+<td>0</td>
+<td>0.003s</td>
+<td class="failures">0%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest.html">org.example.APIGatewaySvc.integration.CircuitBreakerIntegrationTest</a>
+</td>
+<td>10</td>
+<td>10</td>
+<td>0</td>
+<td>0.003s</td>
+<td class="failures">0%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest.html">org.example.APIGatewaySvc.integration.LoginAttemptIntegrationTest</a>
+</td>
+<td>6</td>
+<td>6</td>
+<td>0</td>
+<td>0.002s</td>
+<td class="failures">0%</td>
+</tr>
+<tr>
+<td class="skipped">
+<a href="classes/org.example.APIGatewaySvc.security.SecurityConfigTest.html">org.example.APIGatewaySvc.security.SecurityConfigTest</a>
+</td>
+<td>9</td>
+<td>0</td>
+<td>9</td>
+<td>0s</td>
+<td class="skipped">-</td>
 </tr>
 <tr>
 <td class="success">
@@ -132,7 +754,47 @@
 <td>8</td>
 <td>0</td>
 <td>0</td>
-<td>0.541s</td>
+<td>0.235s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.service.KafkaProducerServiceTest.html">org.example.APIGatewaySvc.service.KafkaProducerServiceTest</a>
+</td>
+<td>6</td>
+<td>1</td>
+<td>0</td>
+<td>0.117s</td>
+<td class="failures">83%</td>
+</tr>
+<tr>
+<td class="failures">
+<a href="classes/org.example.APIGatewaySvc.service.LoginAttemptServiceTest.html">org.example.APIGatewaySvc.service.LoginAttemptServiceTest</a>
+</td>
+<td>10</td>
+<td>1</td>
+<td>0</td>
+<td>0.078s</td>
+<td class="failures">90%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="classes/org.example.APIGatewaySvc.util.ProblemDetailsUtilTest.html">org.example.APIGatewaySvc.util.ProblemDetailsUtilTest</a>
+</td>
+<td>8</td>
+<td>0</td>
+<td>0</td>
+<td>0.221s</td>
+<td class="success">100%</td>
+</tr>
+<tr>
+<td class="success">
+<a href="classes/org.example.APIGatewaySvc.util.SecurityMaskingUtilTest.html">org.example.APIGatewaySvc.util.SecurityMaskingUtilTest</a>
+</td>
+<td>12</td>
+<td>0</td>
+<td>0</td>
+<td>0.026s</td>
 <td class="success">100%</td>
 </tr>
 </tbody>
@@ -146,7 +808,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="https://www.gradle.org">Gradle 8.14.3</a> at 2025. 8. 12. 오전 2:20:10</p>
+<a href="https://www.gradle.org">Gradle 8.14.3</a> at 2025. 8. 13. 오후 10:37:06</p>
 </div>
 </div>
 </body>

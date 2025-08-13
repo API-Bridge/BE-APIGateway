@@ -2,6 +2,8 @@ package org.example.APIGatewaySvc.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
@@ -17,9 +19,12 @@ import java.util.Map;
  * - fields: 필드별 에러 정보 (validation 에러 시)
  * - traceId: 에러 추적 ID (내부 로깅용)
  */
+@Setter
+@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ErrorDetails {
-    
+public class ErrorDetailsDTO {
+
+    // Getters and Setters
     @JsonProperty("type")
     private String type;
     
@@ -32,54 +37,21 @@ public class ErrorDetails {
     @JsonProperty("traceId")
     private String traceId;
     
-    public ErrorDetails() {}
+    public ErrorDetailsDTO() {}
     
-    public ErrorDetails(String type, Map<String, Object> details, String traceId) {
+    public ErrorDetailsDTO(String type, Map<String, Object> details, String traceId) {
         this.type = type;
         this.details = details;
         this.traceId = traceId;
     }
     
-    public ErrorDetails(String type, Map<String, Object> details, List<FieldError> fields, String traceId) {
+    public ErrorDetailsDTO(String type, Map<String, Object> details, List<FieldError> fields, String traceId) {
         this.type = type;
         this.details = details;
         this.fields = fields;
         this.traceId = traceId;
     }
-    
-    // Getters and Setters
-    public String getType() {
-        return type;
-    }
-    
-    public void setType(String type) {
-        this.type = type;
-    }
-    
-    public Map<String, Object> getDetails() {
-        return details;
-    }
-    
-    public void setDetails(Map<String, Object> details) {
-        this.details = details;
-    }
-    
-    public List<FieldError> getFields() {
-        return fields;
-    }
-    
-    public void setFields(List<FieldError> fields) {
-        this.fields = fields;
-    }
-    
-    public String getTraceId() {
-        return traceId;
-    }
-    
-    public void setTraceId(String traceId) {
-        this.traceId = traceId;
-    }
-    
+
     /**
      * 필드별 에러 정보
      */

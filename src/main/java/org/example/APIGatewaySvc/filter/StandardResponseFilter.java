@@ -3,17 +3,14 @@ package org.example.APIGatewaySvc.filter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.APIGatewaySvc.dto.ErrorDetails;
-import org.example.APIGatewaySvc.dto.StandardResponse;
+import org.example.APIGatewaySvc.dto.ErrorDetailsDTO;
+import org.example.APIGatewaySvc.dto.StandardResponseDTO;
 import org.example.APIGatewaySvc.util.ErrorCodeMapper;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -32,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * API Gateway 표준 응답 필터
+ * API Gateway 성공/예상 표준 응답 처리 필터
  * 
  * 다운스트림 서비스로부터 받은 응답을 StandardResponse 형식으로 래핑하여
  * 클라이언트에게 일관된 형식으로 전달
@@ -105,7 +102,7 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
                             long durationMs = processingTime.toMillis();
                             
                             // StandardResponse로 래핑
-                            StandardResponse<?> wrappedResponse = wrapResponse(
+                            StandardResponseDTO<?> wrappedResponse = wrapResponse(
                                     originalBody, 
                                     originalResponse.getStatusCode(), 
                                     requestId, 
@@ -177,13 +174,13 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
     /**
      * 원본 응답을 StandardResponse로 래핑
      */
-    private StandardResponse<?> wrapResponse(String originalBody, HttpStatusCode statusCode, String requestId, long durationMs) {
+    private StandardResponseDTO<?> wrapResponse(String originalBody, HttpStatusCode statusCode, String requestId, long durationMs) {
         Map<String, Object> meta = createMetadata(requestId, durationMs);
         
         if (ErrorCodeMapper.isSuccessStatus(statusCode)) {
             // 성공 응답 래핑
             Object data = parseJsonSafely(originalBody);
-            return StandardResponse.success("SUCCESS", "요청이 성공적으로 처리되었습니다", data, meta);
+            return StandardResponseDTO.success("SUCCESS", "요청이 성공적으로 처리되었습니다", data, meta);
             
         } else {
             // 에러 응답 래핑
@@ -196,8 +193,8 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
             errorDetails.put("httpStatus", statusCode.value());
             errorDetails.put("originalResponse", originalBody);
             
-            ErrorDetails error = new ErrorDetails(errorType, errorDetails, requestId);
-            return StandardResponse.error(errorCode, userMessage, error, meta);
+            ErrorDetailsDTO error = new ErrorDetailsDTO(errorType, errorDetails, requestId);
+            return StandardResponseDTO.error(errorCode, userMessage, error, meta);
         }
     }
 
@@ -251,8 +248,8 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
         Map<String, Object> errorDetails = new HashMap<>();
         errorDetails.put("reason", "Response serialization failed");
         
-        ErrorDetails error = new ErrorDetails("INFRASTRUCTURE", errorDetails, requestId);
-        StandardResponse<?> errorResponse = StandardResponse.error(
+        ErrorDetailsDTO error = new ErrorDetailsDTO("INFRASTRUCTURE", errorDetails, requestId);
+        StandardResponseDTO<?> errorResponse = StandardResponseDTO.error(
                 "GATEWAY_ERROR", 
                 "게이트웨이에서 응답 처리 중 오류가 발생했습니다", 
                 error, 

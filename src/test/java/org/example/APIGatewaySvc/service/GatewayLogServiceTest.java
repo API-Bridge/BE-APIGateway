@@ -1,6 +1,6 @@
 package org.example.APIGatewaySvc.service;
 
-import org.example.APIGatewaySvc.dto.GatewayLogEvent;
+import org.example.APIGatewaySvc.dto.GatewayLogEventDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,23 +41,23 @@ class GatewayLogServiceTest {
     @Test
     void shouldSendLogEventToKafka() {
         // Given
-        GatewayLogEvent logEvent = GatewayLogEvent.builder()
+        GatewayLogEventDTO logEvent = GatewayLogEventDTO.builder()
             .requestId("test-request-123")
-            .eventType(GatewayLogEvent.EventType.REQUEST_START)
+            .eventType(GatewayLogEventDTO.EventType.REQUEST_START)
             .method("GET")
             .path("/test/path")
             .ip("127.0.0.1")
             .userId("testuser")
             .build();
 
-        when(kafkaTemplate.send(eq("logs.gateway"), eq("test-request-123"), any(GatewayLogEvent.class)))
+        when(kafkaTemplate.send(eq("logs.gateway"), eq("test-request-123"), any(GatewayLogEventDTO.class)))
             .thenReturn(future);
 
         // When
         logService.sendLogEvent(logEvent);
 
         // Then
-        verify(kafkaTemplate).send(eq("logs.gateway"), eq("test-request-123"), any(GatewayLogEvent.class));
+        verify(kafkaTemplate).send(eq("logs.gateway"), eq("test-request-123"), any(GatewayLogEventDTO.class));
     }
 
     @Test
@@ -68,24 +68,24 @@ class GatewayLogServiceTest {
         headers.put("x-api-key", "secret-api-key-12345");
         headers.put("user-agent", "Mozilla/5.0");
 
-        GatewayLogEvent logEvent = GatewayLogEvent.builder()
+        GatewayLogEventDTO logEvent = GatewayLogEventDTO.builder()
             .requestId("test-request-123")
-            .eventType(GatewayLogEvent.EventType.REQUEST_START)
+            .eventType(GatewayLogEventDTO.EventType.REQUEST_START)
             .headers(headers)
             .path("/test?token=secret123")
             .build();
 
-        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEvent.class)))
+        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEventDTO.class)))
             .thenReturn(future);
 
         // When
         logService.sendLogEvent(logEvent);
 
         // Then
-        ArgumentCaptor<GatewayLogEvent> eventCaptor = ArgumentCaptor.forClass(GatewayLogEvent.class);
+        ArgumentCaptor<GatewayLogEventDTO> eventCaptor = ArgumentCaptor.forClass(GatewayLogEventDTO.class);
         verify(kafkaTemplate).send(anyString(), anyString(), eventCaptor.capture());
 
-        GatewayLogEvent capturedEvent = eventCaptor.getValue();
+        GatewayLogEventDTO capturedEvent = eventCaptor.getValue();
         
         // Authorization 헤더가 마스킹되었는지 확인
         String maskedAuth = capturedEvent.getHeaders().get("authorization");
@@ -110,7 +110,7 @@ class GatewayLogServiceTest {
         headers.put("user-agent", "Test Agent");
         headers.put("authorization", "Bearer token123");
 
-        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEvent.class)))
+        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEventDTO.class)))
             .thenReturn(future);
 
         // When
@@ -128,10 +128,10 @@ class GatewayLogServiceTest {
         );
 
         // Then
-        ArgumentCaptor<GatewayLogEvent> eventCaptor = ArgumentCaptor.forClass(GatewayLogEvent.class);
+        ArgumentCaptor<GatewayLogEventDTO> eventCaptor = ArgumentCaptor.forClass(GatewayLogEventDTO.class);
         verify(kafkaTemplate).send(eq("logs.gateway"), eq("req-123"), eventCaptor.capture());
 
-        GatewayLogEvent event = eventCaptor.getValue();
+        GatewayLogEventDTO event = eventCaptor.getValue();
         assertEquals("req-123", event.getRequestId());
         assertEquals("gateway.request.start", event.getEventType());
         assertEquals("POST", event.getMethod());
@@ -148,17 +148,17 @@ class GatewayLogServiceTest {
     @Test
     void shouldLogRequestEnd() {
         // Given
-        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEvent.class)))
+        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEventDTO.class)))
             .thenReturn(future);
 
         // When
         logService.logRequestEnd("req-123", 200, 1500L, 2048L);
 
         // Then
-        ArgumentCaptor<GatewayLogEvent> eventCaptor = ArgumentCaptor.forClass(GatewayLogEvent.class);
+        ArgumentCaptor<GatewayLogEventDTO> eventCaptor = ArgumentCaptor.forClass(GatewayLogEventDTO.class);
         verify(kafkaTemplate).send(eq("logs.gateway"), eq("req-123"), eventCaptor.capture());
 
-        GatewayLogEvent event = eventCaptor.getValue();
+        GatewayLogEventDTO event = eventCaptor.getValue();
         assertEquals("req-123", event.getRequestId());
         assertEquals("gateway.request.end", event.getEventType());
         assertEquals(Integer.valueOf(200), event.getStatus());
@@ -169,17 +169,17 @@ class GatewayLogServiceTest {
     @Test
     void shouldLogRequestError() {
         // Given
-        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEvent.class)))
+        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEventDTO.class)))
             .thenReturn(future);
 
         // When
         logService.logRequestError("req-123", 500, 2000L, "Connection timeout", "TimeoutException");
 
         // Then
-        ArgumentCaptor<GatewayLogEvent> eventCaptor = ArgumentCaptor.forClass(GatewayLogEvent.class);
+        ArgumentCaptor<GatewayLogEventDTO> eventCaptor = ArgumentCaptor.forClass(GatewayLogEventDTO.class);
         verify(kafkaTemplate).send(eq("logs.gateway"), eq("req-123"), eventCaptor.capture());
 
-        GatewayLogEvent event = eventCaptor.getValue();
+        GatewayLogEventDTO event = eventCaptor.getValue();
         assertEquals("req-123", event.getRequestId());
         assertEquals("gateway.request.error", event.getEventType());
         assertEquals(Integer.valueOf(500), event.getStatus());
@@ -193,9 +193,9 @@ class GatewayLogServiceTest {
         // Given
         ReflectionTestUtils.setField(logService, "loggingEnabled", false);
         
-        GatewayLogEvent logEvent = GatewayLogEvent.builder()
+        GatewayLogEventDTO logEvent = GatewayLogEventDTO.builder()
             .requestId("test-request-123")
-            .eventType(GatewayLogEvent.EventType.REQUEST_START)
+            .eventType(GatewayLogEventDTO.EventType.REQUEST_START)
             .build();
 
         // When
@@ -208,7 +208,7 @@ class GatewayLogServiceTest {
     @Test
     void shouldHandleAnonymousUser() {
         // Given
-        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEvent.class)))
+        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEventDTO.class)))
             .thenReturn(future);
 
         // When
@@ -226,10 +226,10 @@ class GatewayLogServiceTest {
         );
 
         // Then
-        ArgumentCaptor<GatewayLogEvent> eventCaptor = ArgumentCaptor.forClass(GatewayLogEvent.class);
+        ArgumentCaptor<GatewayLogEventDTO> eventCaptor = ArgumentCaptor.forClass(GatewayLogEventDTO.class);
         verify(kafkaTemplate).send(anyString(), anyString(), eventCaptor.capture());
 
-        GatewayLogEvent event = eventCaptor.getValue();
+        GatewayLogEventDTO event = eventCaptor.getValue();
         assertEquals("anonymous", event.getUserId());
     }
 
@@ -241,23 +241,23 @@ class GatewayLogServiceTest {
         Map<String, String> headers = new HashMap<>();
         headers.put("authorization", "Bearer secret-token");
 
-        GatewayLogEvent logEvent = GatewayLogEvent.builder()
+        GatewayLogEventDTO logEvent = GatewayLogEventDTO.builder()
             .requestId("test-request-123")
-            .eventType(GatewayLogEvent.EventType.REQUEST_START)
+            .eventType(GatewayLogEventDTO.EventType.REQUEST_START)
             .headers(headers)
             .build();
 
-        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEvent.class)))
+        when(kafkaTemplate.send(anyString(), anyString(), any(GatewayLogEventDTO.class)))
             .thenReturn(future);
 
         // When
         logService.sendLogEvent(logEvent);
 
         // Then
-        ArgumentCaptor<GatewayLogEvent> eventCaptor = ArgumentCaptor.forClass(GatewayLogEvent.class);
+        ArgumentCaptor<GatewayLogEventDTO> eventCaptor = ArgumentCaptor.forClass(GatewayLogEventDTO.class);
         verify(kafkaTemplate).send(anyString(), anyString(), eventCaptor.capture());
 
-        GatewayLogEvent event = eventCaptor.getValue();
+        GatewayLogEventDTO event = eventCaptor.getValue();
         // 마스킹이 비활성화되었으므로 원본 값이 유지되어야 함
         assertEquals("Bearer secret-token", event.getHeaders().get("authorization"));
     }

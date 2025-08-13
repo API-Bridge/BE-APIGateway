@@ -39,11 +39,20 @@ public class RateLimitConfig {
     @Bean("defaultRedisRateLimiter")
     @Primary
     public RedisRateLimiter defaultRedisRateLimiter() {
-        return new RedisRateLimiter(
-                defaultReplenishRate,    // 초당 토큰 보충 개수 (sustained rate)
-                defaultBurstCapacity,    // 버스트 허용 토큰 수 (peak rate)  
-                defaultRequestedTokens   // 요청당 소비 토큰 수
+        // 테스트를 위해 더 낮은 값으로 설정
+        RedisRateLimiter rateLimiter = new RedisRateLimiter(
+                5,    // 초당 5개 토큰 보충 (테스트용으로 낮게 설정)
+                10,   // 버스트 10개 허용 (테스트용으로 낮게 설정)
+                1     // 요청당 1토큰 소비
         );
+        
+        // 디버깅을 위한 로깅
+        System.out.println("DefaultRedisRateLimiter created: replenishRate=5, burstCapacity=10, requestedTokens=1");
+        
+        // Rate Limiter 디버깅을 위한 로그
+        System.out.println("Rate Limiter configured for debugging");
+        
+        return rateLimiter;
     }
 
     /**

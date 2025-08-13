@@ -30,7 +30,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
         "spring.data.redis.repositories.enabled=false",
         "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration"
 })
-class StandardResponseFilterTest {
+class StandardResponseDTOFilterTest {
 
     @LocalServerPort
     private int port;
