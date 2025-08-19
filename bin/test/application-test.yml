@@ -1,0 +1,139 @@
+spring:
+  application:
+    name: api-gateway-test
+  
+  # 테스트용 Spring Cloud Gateway 설정
+  cloud:
+    gateway:
+      # 테스트용 라우트 설정
+      routes:
+        - id: user-service-test
+          uri: http://localhost:8081
+          predicates:
+            - Path=/users/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@defaultRedisRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+        - id: api-management-service-test
+          uri: http://localhost:8082
+          predicates:
+            - Path=/apimgmt/**
+          filters:
+            - StripPrefix=1
+        - id: custom-api-management-service-test
+          uri: http://localhost:8083
+          predicates:
+            - Path=/customapi/**
+          filters:
+            - StripPrefix=1
+        - id: ai-feature-service-test
+          uri: http://localhost:8084
+          predicates:
+            - Path=/aifeature/**
+          filters:
+            - StripPrefix=1
+        - id: system-management-service-test
+          uri: http://localhost:8085
+          predicates:
+            - Path=/sysmgmt/**
+          filters:
+            - StripPrefix=1
+      
+      # 테스트에서는 기본 필터 비활성화
+      default-filters: []
+      
+      # 테스트용 CORS 설정
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOriginPatterns: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+
+  # 테스트용 OAuth2 Resource Server 설정
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # 테스트용 Mock JWKS URI
+          issuer-uri: ${auth0.issuerUri}
+
+  # 테스트용 Redis 설정 (Embedded 또는 TestContainers 사용)
+  redis:
+    host: localhost
+    port: 6380  # 테스트 전용 포트
+    timeout: 1000ms
+
+# Auth0 테스트 설정
+auth0:
+  issuerUri: https://api-bridge.us.auth0.com/
+  audience: https://api.api-bridge.com
+  client-id: test-client-id
+
+# JWT 테스트 모드 활성화
+jwt:
+  test-mode: true
+
+# Rate Limiting 테스트 설정
+rate-limit:
+  default:
+    replenish-rate: 2
+    burst-capacity: 4
+    requested-tokens: 1
+
+# 로깅 설정 (테스트용)
+logging:
+  level:
+    root: WARN
+    org.example.APIGatewaySvc: DEBUG
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [%X{requestId:-}] %logger{36} - %msg%n"
+
+# 서버 설정
+server:
+  port: 0  # 랜덤 포트 사용
+
+# Actuator 설정 (테스트용)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# 테스트용 서비스 URI (Mock 서비스)
+services:
+  user-service:
+    uri: http://httpbin.org
+  api-management-service:
+    uri: http://httpbin.org
+  custom-api-management-service:
+    uri: http://httpbin.org
+  ai-feature-service:
+    uri: http://httpbin.org
+  system-management-service:
+    uri: http://httpbin.org
+
+# Circuit Breaker 설정 (테스트용 - 더 민감하게)
+resilience4j:
+  circuitbreaker:
+    instances:
+      default:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+  retry:
+    instances:
+      default:
+        maxAttempts: 2
+        waitDuration: 100ms

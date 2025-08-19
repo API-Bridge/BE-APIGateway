@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.config.KeyResolverConfigTest" tests="9" skipped="0" failures="1" errors="0" timestamp="2025-08-17T23:06:58.577Z" hostname="SEOKYEEUN" time="3.355">
+  <properties/>
+  <testcase name="X-Forwarded-For 헤더에서 클라이언트 IP를 정확히 추출해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.492"/>
+  <testcase name="인증되지 않은 사용자의 경우 IP 기반 키를 반환해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.002"/>
+  <testcase name="IP Key Resolver는 항상 IP 기반 키를 반환해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="2.733"/>
+  <testcase name="빈 JWT subject는 IP 기반 키로 폴백되어야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.049"/>
+  <testcase name="X-Real-IP 헤더에서 클라이언트 IP를 추출해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.005"/>
+  <testcase name="잘못된 형식의 IP 주소는 unknown으로 처리되어야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.006"/>
+  <testcase name="사설망 IP는 필터링되고 RemoteAddress를 사용해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.031">
+    <failure message="java.lang.AssertionError: expectation &quot;expectNext(ip:203.0.113.100)&quot; failed (expected value: ip:203.0.113.100; actual value: ip:192.168.1.1)" type="java.lang.AssertionError">java.lang.AssertionError: expectation &quot;expectNext(ip:203.0.113.100)&quot; failed (expected value: ip:203.0.113.100; actual value: ip:192.168.1.1)
+	at reactor.test.MessageFormatter.assertionError(MessageFormatter.java:115)
+	at reactor.test.MessageFormatter.failPrefix(MessageFormatter.java:104)
+	at reactor.test.MessageFormatter.fail(MessageFormatter.java:73)
+	at reactor.test.MessageFormatter.failOptional(MessageFormatter.java:88)
+	at reactor.test.DefaultStepVerifierBuilder.lambda$addExpectedValue$10(DefaultStepVerifierBuilder.java:512)
+	at reactor.test.DefaultStepVerifierBuilder$SignalEvent.test(DefaultStepVerifierBuilder.java:2289)
+	at reactor.test.DefaultStepVerifierBuilder$DefaultVerifySubscriber.onSignal(DefaultStepVerifierBuilder.java:1529)
+	at reactor.test.DefaultStepVerifierBuilder$DefaultVerifySubscriber.onExpectation(DefaultStepVerifierBuilder.java:1477)
+	at reactor.test.DefaultStepVerifierBuilder$DefaultVerifySubscriber.onNext(DefaultStepVerifierBuilder.java:1146)
+	at reactor.core.publisher.FluxPeek$PeekSubscriber.onNext(FluxPeek.java:200)
+	at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+	at reactor.core.publisher.MonoCallable$MonoCallableSubscription.request(MonoCallable.java:156)
+	at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.set(Operators.java:2367)
+	at reactor.core.publisher.Operators$MultiSubscriptionSubscriber.onSubscribe(Operators.java:2241)
+	at reactor.core.publisher.MonoCallable.subscribe(MonoCallable.java:48)
+	at reactor.core.publisher.Mono.subscribe(Mono.java:4576)
+	at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onComplete(FluxSwitchIfEmpty.java:82)
+	at reactor.core.publisher.FluxMap$MapSubscriber.onComplete(FluxMap.java:144)
+	at reactor.core.publisher.FluxMap$MapSubscriber.onComplete(FluxMap.java:144)
+	at reactor.core.publisher.FluxFilter$FilterSubscriber.onComplete(FluxFilter.java:166)
+	at reactor.core.publisher.FluxMap$MapConditionalSubscriber.onComplete(FluxMap.java:275)
+	at reactor.core.publisher.FluxMap$MapConditionalSubscriber.onComplete(FluxMap.java:275)
+	at reactor.core.publisher.FluxMap$MapConditionalSubscriber.onComplete(FluxMap.java:275)
+	at reactor.core.publisher.Operators.complete(Operators.java:137)
+	at reactor.core.publisher.MonoEmpty.subscribe(MonoEmpty.java:46)
+	at reactor.core.publisher.Mono.subscribe(Mono.java:4576)
+	at reactor.test.DefaultStepVerifierBuilder$DefaultStepVerifier.toVerifierAndSubscribe(DefaultStepVerifierBuilder.java:891)
+	at reactor.test.DefaultStepVerifierBuilder$DefaultStepVerifier.verify(DefaultStepVerifierBuilder.java:831)
+	at reactor.test.DefaultStepVerifierBuilder$DefaultStepVerifier.verify(DefaultStepVerifierBuilder.java:823)
+	at reactor.test.DefaultStepVerifierBuilder.verifyComplete(DefaultStepVerifierBuilder.java:690)
+	at org.example.APIGatewaySvc.config.KeyResolverConfigTest.shouldFilterPrivateIpAndUseRemoteAddress(KeyResolverConfigTest.java:163)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="CF-Connecting-IP 헤더에서 클라이언트 IP를 추출해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.004"/>
+  <testcase name="인증된 사용자의 경우 사용자 ID 기반 키를 반환해야 함" classname="org.example.APIGatewaySvc.config.KeyResolverConfigTest" time="0.01"/>
+  <system-out><![CDATA[Rate Limit Key: ip:203.0.113.45
+Final Rate Limit Key: ip:203.0.113.45
+Rate Limit Key: ip:192.168.1.100
+Final Rate Limit Key: ip:192.168.1.100
+Rate Limit Key: ip:203.0.113.50
+Final Rate Limit Key: ip:203.0.113.50
+Rate Limit Key: ip:198.51.100.42
+Final Rate Limit Key: ip:198.51.100.42
+Rate Limit Key: ip:unknown
+Final Rate Limit Key: ip:unknown
+Rate Limit Key: ip:192.168.1.1
+Final Rate Limit Key: ip:192.168.1.1
+Rate Limit Key: ip:203.0.113.100
+Final Rate Limit Key: ip:203.0.113.100
+Final Rate Limit Key: user:auth0|test-user-123
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

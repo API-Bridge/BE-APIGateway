@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.controller.InternalBlockControllerTest" tests="8" skipped="0" failures="4" errors="0" timestamp="2025-08-17T23:07:02.247Z" hostname="SEOKYEEUN" time="0.659">
+  <properties/>
+  <testcase name="shouldBlockIPPermanently()" classname="org.example.APIGatewaySvc.controller.InternalBlockControllerTest" time="0.535"/>
+  <testcase name="shouldCheckIfUserIsBlocked()" classname="org.example.APIGatewaySvc.controller.InternalBlockControllerTest" time="0.024"/>
+  <testcase name="shouldListBlockedUsers()" classname="org.example.APIGatewaySvc.controller.InternalBlockControllerTest" time="0.029"/>
+  <testcase name="shouldUnblockSuccessfully()" classname="org.example.APIGatewaySvc.controller.InternalBlockControllerTest" time="0.041">
+    <failure message="org.mockito.exceptions.misusing.UnnecessaryStubbingException: &#10;Unnecessary stubbings detected.&#10;Clean &amp; maintainable test code requires zero unnecessary code.&#10;Following stubbings are unnecessary (click to navigate to relevant line of code):&#10;  1. -&gt; at org.example.APIGatewaySvc.controller.InternalBlockControllerTest.setUp(InternalBlockControllerTest.java:37)&#10;Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class." type="org.mockito.exceptions.misusing.UnnecessaryStubbingException">org.mockito.exceptions.misusing.UnnecessaryStubbingException: 
+Unnecessary stubbings detected.
+Clean &amp; maintainable test code requires zero unnecessary code.
+Following stubbings are unnecessary (click to navigate to relevant line of code):
+  1. -&gt; at org.example.APIGatewaySvc.controller.InternalBlockControllerTest.setUp(InternalBlockControllerTest.java:37)
+Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class.
+	at app//org.mockito.junit.jupiter.MockitoExtension.afterEach(MockitoExtension.java:197)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="shouldCheckIfUserIsNotBlocked()" classname="org.example.APIGatewaySvc.controller.InternalBlockControllerTest" time="0.008">
+    <failure message="org.mockito.exceptions.misusing.UnnecessaryStubbingException: &#10;Unnecessary stubbings detected.&#10;Clean &amp; maintainable test code requires zero unnecessary code.&#10;Following stubbings are unnecessary (click to navigate to relevant line of code):&#10;  1. -&gt; at org.example.APIGatewaySvc.controller.InternalBlockControllerTest.setUp(InternalBlockControllerTest.java:37)&#10;Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class." type="org.mockito.exceptions.misusing.UnnecessaryStubbingException">org.mockito.exceptions.misusing.UnnecessaryStubbingException: 
+Unnecessary stubbings detected.
+Clean &amp; maintainable test code requires zero unnecessary code.
+Following stubbings are unnecessary (click to navigate to relevant line of code):
+  1. -&gt; at org.example.APIGatewaySvc.controller.InternalBlockControllerTest.setUp(InternalBlockControllerTest.java:37)
+Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class.
+	at app//org.mockito.junit.jupiter.MockitoExtension.afterEach(MockitoExtension.java:197)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="shouldBlockUserSuccessfully()" classname="org.example.APIGatewaySvc.controller.InternalBlockControllerTest" time="0.006"/>
+  <testcase name="shouldReturnNotFoundWhenUnblockingNonExistentBlock()" classname="org.example.APIGatewaySvc.controller.InternalBlockControllerTest" time="0.006">
+    <failure message="org.mockito.exceptions.misusing.UnnecessaryStubbingException: &#10;Unnecessary stubbings detected.&#10;Clean &amp; maintainable test code requires zero unnecessary code.&#10;Following stubbings are unnecessary (click to navigate to relevant line of code):&#10;  1. -&gt; at org.example.APIGatewaySvc.controller.InternalBlockControllerTest.setUp(InternalBlockControllerTest.java:37)&#10;Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class." type="org.mockito.exceptions.misusing.UnnecessaryStubbingException">org.mockito.exceptions.misusing.UnnecessaryStubbingException: 
+Unnecessary stubbings detected.
+Clean &amp; maintainable test code requires zero unnecessary code.
+Following stubbings are unnecessary (click to navigate to relevant line of code):
+  1. -&gt; at org.example.APIGatewaySvc.controller.InternalBlockControllerTest.setUp(InternalBlockControllerTest.java:37)
+Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class.
+	at app//org.mockito.junit.jupiter.MockitoExtension.afterEach(MockitoExtension.java:197)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="shouldRejectInvalidBlockType()" classname="org.example.APIGatewaySvc.controller.InternalBlockControllerTest" time="0.005">
+    <failure message="org.mockito.exceptions.misusing.UnnecessaryStubbingException: &#10;Unnecessary stubbings detected.&#10;Clean &amp; maintainable test code requires zero unnecessary code.&#10;Following stubbings are unnecessary (click to navigate to relevant line of code):&#10;  1. -&gt; at org.example.APIGatewaySvc.controller.InternalBlockControllerTest.setUp(InternalBlockControllerTest.java:37)&#10;Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class." type="org.mockito.exceptions.misusing.UnnecessaryStubbingException">org.mockito.exceptions.misusing.UnnecessaryStubbingException: 
+Unnecessary stubbings detected.
+Clean &amp; maintainable test code requires zero unnecessary code.
+Following stubbings are unnecessary (click to navigate to relevant line of code):
+  1. -&gt; at org.example.APIGatewaySvc.controller.InternalBlockControllerTest.setUp(InternalBlockControllerTest.java:37)
+Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class.
+	at app//org.mockito.junit.jupiter.MockitoExtension.afterEach(MockitoExtension.java:197)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.filter.JwtAuthenticationFilterTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2025-08-17T23:07:03.840Z" hostname="SEOKYEEUN" time="0.185">
+  <properties/>
+  <testcase name="testPublicPathAllowed()" classname="org.example.APIGatewaySvc.filter.JwtAuthenticationFilterTest" time="0.044"/>
+  <testcase name="testOptionsRequestAllowed()" classname="org.example.APIGatewaySvc.filter.JwtAuthenticationFilterTest" time="0.004"/>
+  <testcase name="testSwaggerPathAllowed()" classname="org.example.APIGatewaySvc.filter.JwtAuthenticationFilterTest" time="0.004"/>
+  <testcase name="testProtectedPathWithValidToken()" classname="org.example.APIGatewaySvc.filter.JwtAuthenticationFilterTest" time="0.008"/>
+  <testcase name="testProtectedPathWithoutToken()" classname="org.example.APIGatewaySvc.filter.JwtAuthenticationFilterTest" time="0.119"/>
+  <testcase name="testProtectedPathWithInvalidTokenFormat()" classname="org.example.APIGatewaySvc.filter.JwtAuthenticationFilterTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

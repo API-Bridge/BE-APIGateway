@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>유레카 서버 기반 MSA 통합 테스트 대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .card h3 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online { background-color: #48bb78; }
+        .status-offline { background-color: #f56565; }
+        .status-unknown { background-color: #ed8936; }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin: 5px;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #4fd1c7 0%, #38b2ac 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+        }
+
+        .log-area {
+            background: #1a202c;
+            color: #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .service-card {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .service-card.online {
+            border-left-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .service-card.offline {
+            border-left-color: #f56565;
+            background: #fed7d7;
+        }
+
+        .service-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .service-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .service-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .eureka-status {
+            background: #e8f4fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+
+        .api-test-section {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .success {
+            color: #48bb78;
+            background-color: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .error {
+            color: #f56565;
+            background-color: #fed7d7;
+            border: 1px solid #feb2b2;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .info {
+            color: #667eea;
+            background-color: #ebf4ff;
+            border: 1px solid #bee3f8;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+
+            .service-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ 유레카 서버 기반 MSA 통합 테스트</h1>
+            <p>마이크로서비스 아키텍처 전체 플로우를 테스트하고 모니터링하세요</p>
+        </div>
+
+        <!-- 유레카 서버 상태 -->
+        <div class="card">
+            <h3>🏢 유레카 서비스 레지스트리 상태</h3>
+            <div class="eureka-status">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="status-indicator status-unknown" id="eureka-status"></span>
+                        <strong>Eureka Server (8761)</strong>
+                        <span id="eureka-status-text">확인 중...</span>
+                    </div>
+                    <button class="btn btn-secondary" onclick="openEurekaUI()">유레카 UI 열기</button>
+                </div>
+                <div id="registered-services" style="margin-top: 15px;">
+                    <h4>등록된 서비스 목록</h4>
+                    <div class="service-grid" id="service-list"></div>
+                </div>
+            </div>
+            <button class="btn" onclick="checkEurekaServices()">🔄 서비스 레지스트리 새로고침</button>
+            <button class="btn btn-success" onclick="startMSATest()">🚀 MSA 통합 테스트 시작</button>
+        </div>
+
+        <div class="dashboard">
+            <!-- API Gateway 상태 -->
+            <div class="card">
+                <h3>🚪 API Gateway 상태</h3>
+                <div style="margin-bottom: 15px;">
+                    <div>
+                        <span class="status-indicator status-unknown" id="gateway-status"></span>
+                        <strong>API Gateway (8080)</strong>
+                        <span id="gateway-status-text">확인 중...</span>
+                    </div>
+                </div>
+                <div id="gateway-routes" style="margin-top: 15px;">
+                    <h4>Gateway 라우트 정보</h4>
+                    <div id="routes-list"></div>
+                </div>
+                <button class="btn" onclick="checkGatewayHealth()">상태 확인</button>
+                <button class="btn btn-secondary" onclick="viewGatewayRoutes()">라우트 조회</button>
+            </div>
+
+            <!-- Auth0 인증 -->
+            <div class="card">
+                <h3>🔐 Auth0 인증</h3>
+                <div id="auth-status" class="info">로그인이 필요합니다</div>
+                <button class="btn" onclick="loginWithAuth0()" id="login-btn">Auth0 로그인</button>
+                <button class="btn btn-danger" onclick="logout()" id="logout-btn" style="display: none;">로그아웃</button>
+                
+                <div id="user-info" style="display: none;">
+                    <h4>현재 사용자</h4>
+                    <div id="user-details"></div>
+                </div>
+            </div>
+
+            <!-- 마이크로서비스 테스트 -->
+            <div class="card">
+                <h3>🔧 마이크로서비스 API 테스트</h3>
+                <div class="api-test-section">
+                    <div class="form-group">
+                        <label>테스트할 서비스 선택</label>
+                        <select id="service-select">
+                            <option value="">서비스를 선택하세요</option>
+                            <option value="USER-SERVICE">사용자 서비스</option>
+                            <option value="BE-APIManagementService">API 관리 서비스</option>
+                            <option value="BE-CustomAPIManagementService">커스텀 API 관리 서비스</option>
+                            <option value="BE-AIFeatureService">AI 기능 서비스</option>
+                            <option value="BE-SystemManagementService">시스템 관리 서비스</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>API 엔드포인트</label>
+                        <input type="text" id="api-endpoint" placeholder="/api/users" value="/actuator/health">
+                    </div>
+                    <div class="form-group">
+                        <label>HTTP 메서드</label>
+                        <select id="http-method">
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="testMicroservice()" id="test-api-btn" disabled>API 테스트 실행</button>
+                    <button class="btn btn-secondary" onclick="loadTestScenarios()">시나리오 테스트</button>
+                </div>
+                
+                <div id="api-result"></div>
+            </div>
+
+            <!-- 서킷 브레이커 모니터링 -->
+            <div class="card">
+                <h3>⚡ 서킷 브레이커 모니터링</h3>
+                <div id="circuit-breaker-status">
+                    <p>서킷 브레이커 상태를 확인하는 중...</p>
+                </div>
+                <button class="btn" onclick="checkCircuitBreakers()">서킷 브레이커 상태 확인</button>
+                <button class="btn btn-secondary" onclick="simulateFailure()">실패 시뮬레이션</button>
+            </div>
+        </div>
+
+        <!-- 실시간 로그 -->
+        <div class="card">
+            <h3>📋 실시간 테스트 로그</h3>
+            <button class="btn btn-secondary" onclick="clearLogs()">로그 지우기</button>
+            <button class="btn btn-secondary" onclick="exportLogs()">로그 내보내기</button>
+            <div id="log-area" class="log-area"></div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let currentUser = null;
+        let authToken = null;
+        let eurekaServices = [];
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 유레카 서버 기반 MSA 통합 테스트 페이지가 로드되었습니다.');
+            
+            // URL 파라미터 확인 (Auth0 콜백 등)
+            handleAuth0Callback();
+            
+            // 초기 상태 확인
+            setTimeout(() => {
+                checkEurekaServices();
+                checkGatewayHealth();
+                checkCircuitBreakers();
+            }, 100);
+        });
+
+        // 로그 함수
+        function log(message, type = 'info') {
+            const logArea = document.getElementById('log-area');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            
+            const div = document.createElement('div');
+            div.textContent = logEntry;
+            div.style.color = type === 'error' ? '#f56565' : type === 'success' ? '#48bb78' : '#e2e8f0';
+            
+            logArea.appendChild(div);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('log-area').innerHTML = '';
+        }
+
+        function exportLogs() {
+            const logArea = document.getElementById('log-area');
+            const logs = logArea.innerText;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'msa-test-logs-' + new Date().toISOString().slice(0, 19).replace(/:/g, '-') + '.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+            log('📄 로그가 파일로 내보내졌습니다.');
+        }
+
+        // 유레카 서비스 확인
+        async function checkEurekaServices() {
+            log('🏢 유레카 서버 상태를 확인하는 중...');
+            
+            try {
+                // 유레카 서버 상태 확인
+                const eurekaResponse = await fetch('http://localhost:8761/actuator/health', {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                
+                if (eurekaResponse.ok) {
+                    document.getElementById('eureka-status').className = 'status-indicator status-online';
+                    document.getElementById('eureka-status-text').textContent = 'Online';
+                    log('✅ 유레카 서버 (8761) 연결 성공');
+                    
+                    // 등록된 서비스 목록 가져오기
+                    await fetchRegisteredServices();
+                } else {
+                    throw new Error('Eureka health check failed');
+                }
+            } catch (error) {
+                document.getElementById('eureka-status').className = 'status-indicator status-offline';
+                document.getElementById('eureka-status-text').textContent = 'Offline';
+                log('❌ 유레카 서버 (8761) 연결 실패: ' + error.message, 'error');
+                
+                // 유레카 없이도 테스트 가능하도록 기본 서비스 목록 표시
+                showDefaultServices();
+            }
+        }
+
+        // 등록된 서비스 목록 가져오기
+        async function fetchRegisteredServices() {
+            try {
+                const response = await fetch('http://localhost:8761/eureka/apps', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    eurekaServices = data.applications?.application || [];
+                    log(`📋 유레카에서 ${eurekaServices.length}개 서비스 발견`);
+                    displayServices(eurekaServices);
+                } else {
+                    throw new Error('Failed to fetch services from Eureka');
+                }
+            } catch (error) {
+                log('⚠️ 유레카에서 서비스 목록 가져오기 실패: ' + error.message, 'error');
+                showDefaultServices();
+            }
+        }
+
+        // 서비스 목록 표시
+        function displayServices(services) {
+            const serviceList = document.getElementById('service-list');
+            serviceList.innerHTML = '';
+            
+            if (services.length === 0) {
+                serviceList.innerHTML = '<p>등록된 서비스가 없습니다.</p>';
+                return;
+            }
+            
+            services.forEach(service => {
+                const serviceCard = document.createElement('div');
+                serviceCard.className = 'service-card online';
+                
+                const instances = service.instance ? (Array.isArray(service.instance) ? service.instance : [service.instance]) : [];
+                const instanceCount = instances.length;
+                const healthyInstances = instances.filter(inst => inst.status === 'UP').length;
+                
+                serviceCard.innerHTML = `
+                    <div class="service-info">
+                        <div class="service-name">${service.name}</div>
+                        <div class="status-indicator status-${healthyInstances > 0 ? 'online' : 'offline'}"></div>
+                    </div>
+                    <div class="service-details">
+                        인스턴스: ${healthyInstances}/${instanceCount} 정상
+                        ${instances.length > 0 ? `<br>포트: ${instances[0].port?.$}` : ''}
+                    </div>
+                `;
+                
+                serviceList.appendChild(serviceCard);
+            });
+            
+            // 서비스 선택 옵션 업데이트
+            updateServiceSelect(services);
+        }
+
+        // 기본 서비스 목록 표시 (유레카 없을 때)
+        function showDefaultServices() {
+            const defaultServices = [
+                { name: 'API-GATEWAY', status: 'unknown', port: '8080' },
+                { name: 'USER-SERVICE', status: 'unknown', port: '8081' },
+                { name: 'BE-APIManagementService', status: 'unknown', port: '8082' },
+                { name: 'BE-CustomAPIManagementService', status: 'unknown', port: '8083' },
+                { name: 'BE-AIFeatureService', status: 'unknown', port: '8084' },
+                { name: 'BE-SystemManagementService', status: 'unknown', port: '8085' }
+            ];
+            
+            const serviceList = document.getElementById('service-list');
+            serviceList.innerHTML = '';
+            
+            defaultServices.forEach(service => {
+                const serviceCard = document.createElement('div');
+                serviceCard.className = 'service-card';
+                
+                serviceCard.innerHTML = `
+                    <div class="service-info">
+                        <div class="service-name">${service.name}</div>
+                        <div class="status-indicator status-${service.status}"></div>
+                    </div>
+                    <div class="service-details">
+                        포트: ${service.port} (유레카 미연결)
+                    </div>
+                `;
+                
+                serviceList.appendChild(serviceCard);
+            });
+        }
+
+        // 서비스 선택 옵션 업데이트
+        function updateServiceSelect(services) {
+            const serviceSelect = document.getElementById('service-select');
+            // 기존 옵션 유지하고 실제 등록된 서비스만 활성화
+            // 구현이 복잡하므로 기본 옵션 유지
+        }
+
+        // API Gateway 상태 확인
+        async function checkGatewayHealth() {
+            log('🚪 API Gateway 상태를 확인하는 중...');
+            
+            try {
+                const response = await fetch('http://localhost:8080/actuator/health');
+                
+                if (response.ok) {
+                    document.getElementById('gateway-status').className = 'status-indicator status-online';
+                    document.getElementById('gateway-status-text').textContent = 'Online';
+                    log('✅ API Gateway (8080) 연결 성공');
+                } else {
+                    throw new Error('Gateway health check failed');
+                }
+            } catch (error) {
+                document.getElementById('gateway-status').className = 'status-indicator status-offline';
+                document.getElementById('gateway-status-text').textContent = 'Offline';
+                log('❌ API Gateway (8080) 연결 실패: ' + error.message, 'error');
+            }
+        }
+
+        // Gateway 라우트 조회
+        async function viewGatewayRoutes() {
+            log('🔍 Gateway 라우트 정보를 조회하는 중...');
+            
+            try {
+                const response = await fetch('http://localhost:8080/actuator/gateway/routes');
+                
+                if (response.ok) {
+                    const routes = await response.json();
+                    displayGatewayRoutes(routes);
+                    log(`✅ Gateway 라우트 ${routes.length}개 조회 완료`);
+                } else {
+                    throw new Error('Failed to fetch gateway routes');
+                }
+            } catch (error) {
+                log('❌ Gateway 라우트 조회 실패: ' + error.message, 'error');
+                document.getElementById('routes-list').innerHTML = '<div class="error">라우트 정보를 가져올 수 없습니다.</div>';
+            }
+        }
+
+        // Gateway 라우트 표시
+        function displayGatewayRoutes(routes) {
+            const routesList = document.getElementById('routes-list');
+            routesList.innerHTML = '';
+            
+            if (routes.length === 0) {
+                routesList.innerHTML = '<p>설정된 라우트가 없습니다.</p>';
+                return;
+            }
+            
+            routes.forEach(route => {
+                const routeDiv = document.createElement('div');
+                routeDiv.style.cssText = 'background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 5px; font-size: 0.9em;';
+                
+                const predicates = route.predicates || [];
+                const pathPredicate = predicates.find(p => p.name === 'Path');
+                const path = pathPredicate ? pathPredicate.args.pattern : 'N/A';
+                
+                routeDiv.innerHTML = `
+                    <strong>${route.route_id}</strong><br>
+                    경로: ${path}<br>
+                    대상: ${route.uri}
+                `;
+                
+                routesList.appendChild(routeDiv);
+            });
+        }
+
+        // 서킷 브레이커 상태 확인
+        async function checkCircuitBreakers() {
+            log('⚡ 서킷 브레이커 상태를 확인하는 중...');
+            
+            try {
+                const response = await fetch('http://localhost:8080/actuator/circuitbreakers');
+                
+                if (response.ok) {
+                    const circuitBreakers = await response.json();
+                    displayCircuitBreakers(circuitBreakers);
+                    log('✅ 서킷 브레이커 상태 조회 완료');
+                } else {
+                    throw new Error('Failed to fetch circuit breakers');
+                }
+            } catch (error) {
+                log('❌ 서킷 브레이커 상태 조회 실패: ' + error.message, 'error');
+                document.getElementById('circuit-breaker-status').innerHTML = '<div class="error">서킷 브레이커 정보를 가져올 수 없습니다.</div>';
+            }
+        }
+
+        // 서킷 브레이커 상태 표시
+        function displayCircuitBreakers(circuitBreakers) {
+            const statusDiv = document.getElementById('circuit-breaker-status');
+            statusDiv.innerHTML = '';
+            
+            if (!circuitBreakers.circuitBreakers || circuitBreakers.circuitBreakers.length === 0) {
+                statusDiv.innerHTML = '<p>설정된 서킷 브레이커가 없습니다.</p>';
+                return;
+            }
+            
+            circuitBreakers.circuitBreakers.forEach(cb => {
+                const cbDiv = document.createElement('div');
+                cbDiv.style.cssText = 'background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid ' + 
+                    (cb.state === 'CLOSED' ? '#48bb78' : cb.state === 'OPEN' ? '#f56565' : '#ed8936') + ';';
+                
+                cbDiv.innerHTML = `
+                    <strong>${cb.name}</strong><br>
+                    상태: <span style="color: ${cb.state === 'CLOSED' ? '#48bb78' : cb.state === 'OPEN' ? '#f56565' : '#ed8936'}">${cb.state}</span><br>
+                    실패율: ${cb.metrics?.failureRate || 0}%<br>
+                    호출 수: ${cb.metrics?.numberOfCalls || 0}
+                `;
+                
+                statusDiv.appendChild(cbDiv);
+            });
+        }
+
+        // Auth0 로그인
+        function loginWithAuth0() {
+            log('🔐 Auth0 로그인을 시작합니다...');
+            window.location.href = 'http://localhost:8080/oauth2/authorization/auth0';
+        }
+
+        // Auth0 콜백 처리
+        function handleAuth0Callback() {
+            // URL 경로 확인
+            if (window.location.pathname === '/auth/login-success') {
+                log('🔐 Auth0 로그인 성공 감지!');
+                fetchUserInfoFromSession();
+            }
+            
+            // URL 파라미터 확인
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if (code) {
+                log('🔐 Auth0 인증 코드를 받았습니다.');
+                fetchUserInfoFromSession();
+            }
+        }
+
+        // 세션에서 사용자 정보 가져오기
+        async function fetchUserInfoFromSession() {
+            try {
+                const response = await fetch('http://localhost:8080/auth/user-info', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const userInfo = await response.json();
+                    
+                    if (userInfo.authenticated) {
+                        currentUser = {
+                            sub: userInfo.userId || userInfo.sub,
+                            email: userInfo.email,
+                            name: userInfo.name
+                        };
+
+                        log('✅ 사용자 인증 완료!', 'success');
+                        updateAuthUI();
+                        
+                        // API 테스트 버튼 활성화
+                        document.getElementById('test-api-btn').disabled = false;
+                    }
+                }
+            } catch (error) {
+                log('❌ 사용자 정보 가져오기 실패: ' + error.message, 'error');
+            }
+        }
+
+        // 인증 UI 업데이트
+        function updateAuthUI() {
+            document.getElementById('auth-status').className = 'success';
+            document.getElementById('auth-status').textContent = `✅ 로그인 성공: ${currentUser.email}`;
+            document.getElementById('login-btn').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'inline-block';
+            
+            document.getElementById('user-info').style.display = 'block';
+            document.getElementById('user-details').innerHTML = `
+                <strong>ID:</strong> ${currentUser.sub}<br>
+                <strong>Email:</strong> ${currentUser.email}<br>
+                <strong>Name:</strong> ${currentUser.name || 'N/A'}
+            `;
+        }
+
+        // 로그아웃
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            
+            document.getElementById('auth-status').className = 'info';
+            document.getElementById('auth-status').textContent = '로그인이 필요합니다';
+            document.getElementById('login-btn').style.display = 'inline-block';
+            document.getElementById('logout-btn').style.display = 'none';
+            document.getElementById('user-info').style.display = 'none';
+            document.getElementById('test-api-btn').disabled = true;
+
+            log('🔓 로그아웃 완료');
+            window.location.href = 'http://localhost:8080/auth/logout';
+        }
+
+        // 마이크로서비스 API 테스트
+        async function testMicroservice() {
+            const serviceSelect = document.getElementById('service-select');
+            const apiEndpoint = document.getElementById('api-endpoint');
+            const httpMethod = document.getElementById('http-method');
+            
+            if (!serviceSelect.value) {
+                log('❌ 서비스를 선택해주세요', 'error');
+                return;
+            }
+            
+            if (!apiEndpoint.value) {
+                log('❌ API 엔드포인트를 입력해주세요', 'error');
+                return;
+            }
+
+            const serviceName = serviceSelect.value;
+            let url;
+            
+            // URL 구성 (유레카 서비스 이름 기반)
+            if (serviceName === 'USER-SERVICE') {
+                url = `http://localhost:8080/gateway/users${apiEndpoint.value}`;
+            } else {
+                // 다른 서비스들은 서비스 이름을 소문자로 변환하여 경로 구성
+                const servicePath = serviceName.toLowerCase().replace('be-', '').replace('service', '');
+                url = `http://localhost:8080/gateway/${servicePath}${apiEndpoint.value}`;
+            }
+
+            log(`🔧 ${serviceName} API 테스트 시작: ${httpMethod.value} ${url}`);
+
+            try {
+                const requestOptions = {
+                    method: httpMethod.value,
+                    credentials: 'include' // 세션 쿠키 포함
+                };
+
+                const response = await fetch(url, requestOptions);
+                const responseText = await response.text();
+                
+                let responseData;
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch {
+                    responseData = responseText;
+                }
+
+                if (response.ok) {
+                    document.getElementById('api-result').innerHTML = 
+                        `<div class="success">✅ API 테스트 성공!<br>
+                        <strong>상태 코드:</strong> ${response.status}<br>
+                        <strong>응답:</strong><br>
+                        <pre>${JSON.stringify(responseData, null, 2)}</pre></div>`;
+                    log(`✅ ${serviceName} API 테스트 성공: ${response.status}`, 'success');
+                } else if (response.status === 503) {
+                    // 서킷 브레이커가 열린 경우
+                    document.getElementById('api-result').innerHTML = 
+                        `<div class="error">⚡ 서킷 브레이커가 열린 상태입니다<br>
+                        <strong>상태 코드:</strong> ${response.status}<br>
+                        <strong>Fallback 응답:</strong><br>
+                        <pre>${JSON.stringify(responseData, null, 2)}</pre><br>
+                        <button class="btn btn-secondary" onclick="resetCircuitBreaker('${serviceName}')">서킷 브레이커 리셋 시도</button>
+                        <button class="btn btn-secondary" onclick="testDirectConnection('${serviceName}', '${apiEndpoint.value}')">직접 연결 테스트</button></div>`;
+                    log(`⚡ ${serviceName} 서킷 브레이커가 열린 상태입니다`, 'error');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${responseText}`);
+                }
+            } catch (error) {
+                document.getElementById('api-result').innerHTML = 
+                    `<div class="error">❌ API 테스트 실패<br>
+                    <strong>오류:</strong> ${error.message}</div>`;
+                log(`❌ ${serviceName} API 테스트 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 서킷 브레이커 리셋 시도
+        async function resetCircuitBreaker(serviceName) {
+            log(`🔄 ${serviceName} 서킷 브레이커 리셋을 시도합니다...`);
+            
+            // 여러 번 연속으로 요청하여 서킷 브레이커 리셋 유도
+            for (let i = 0; i < 3; i++) {
+                try {
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
+                    const response = await fetch(`http://localhost:8080/gateway/users/actuator/health`, {
+                        credentials: 'include'
+                    });
+                    
+                    if (response.ok) {
+                        log(`✅ ${serviceName} 서킷 브레이커가 리셋되었습니다!`, 'success');
+                        await testMicroservice(); // 다시 테스트
+                        return;
+                    }
+                } catch (error) {
+                    log(`⚠️ 리셋 시도 ${i + 1}/3 실패`, 'error');
+                }
+            }
+            
+            log(`❌ ${serviceName} 서킷 브레이커 리셋 실패. 수동으로 시간을 두고 다시 시도해주세요.`, 'error');
+        }
+
+        // 직접 연결 테스트
+        async function testDirectConnection(serviceName, endpoint) {
+            log(`🔗 ${serviceName} 직접 연결 테스트를 시작합니다...`);
+            
+            // 서비스별 직접 포트 매핑
+            const servicePortMap = {
+                'USER-SERVICE': 8081,
+                'BE-APIManagementService': 8082,
+                'BE-CustomAPIManagementService': 8083,
+                'BE-AIFeatureService': 8084,
+                'BE-SystemManagementService': 8085
+            };
+            
+            const port = servicePortMap[serviceName];
+            if (!port) {
+                log(`❌ ${serviceName}의 포트 정보를 찾을 수 없습니다`, 'error');
+                return;
+            }
+            
+            try {
+                const directUrl = `http://localhost:${port}${endpoint}`;
+                log(`🔗 직접 연결: ${directUrl}`);
+                
+                const response = await fetch(directUrl);
+                const responseText = await response.text();
+                
+                let responseData;
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch {
+                    responseData = responseText;
+                }
+                
+                if (response.ok) {
+                    document.getElementById('api-result').innerHTML = 
+                        `<div class="success">✅ 직접 연결 테스트 성공!<br>
+                        <strong>상태 코드:</strong> ${response.status}<br>
+                        <strong>응답:</strong><br>
+                        <pre>${JSON.stringify(responseData, null, 2)}</pre><br>
+                        <em>💡 서비스는 정상이지만 API Gateway 라우팅에 문제가 있습니다.</em></div>`;
+                    log(`✅ ${serviceName} 직접 연결 성공 (포트 ${port})`, 'success');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${responseText}`);
+                }
+            } catch (error) {
+                document.getElementById('api-result').innerHTML = 
+                    `<div class="error">❌ 직접 연결도 실패<br>
+                    <strong>오류:</strong> ${error.message}<br>
+                    <em>서비스가 아직 완전히 시작되지 않았을 수 있습니다.</em></div>`;
+                log(`❌ ${serviceName} 직접 연결 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 테스트 시나리오 로드
+        function loadTestScenarios() {
+            log('📋 테스트 시나리오를 로드합니다...');
+            
+            const scenarios = [
+                { name: '사용자 서비스 헬스체크', service: 'USER-SERVICE', endpoint: '/actuator/health', method: 'GET' },
+                { name: 'API 관리 서비스 헬스체크', service: 'BE-APIManagementService', endpoint: '/actuator/health', method: 'GET' },
+                { name: '커스텀 API 관리 서비스 헬스체크', service: 'BE-CustomAPIManagementService', endpoint: '/actuator/health', method: 'GET' },
+                { name: 'AI 기능 서비스 헬스체크', service: 'BE-AIFeatureService', endpoint: '/actuator/health', method: 'GET' },
+                { name: '시스템 관리 서비스 헬스체크', service: 'BE-SystemManagementService', endpoint: '/actuator/health', method: 'GET' }
+            ];
+
+            let resultHtml = '<h4>🧪 자동 테스트 시나리오 실행</h4>';
+            resultHtml += '<div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">';
+            
+            scenarios.forEach((scenario, index) => {
+                resultHtml += `
+                    <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 5px; border-left: 4px solid #667eea;">
+                        <strong>${scenario.name}</strong><br>
+                        <small>${scenario.method} ${scenario.endpoint}</small><br>
+                        <button class="btn" onclick="runScenario('${scenario.service}', '${scenario.endpoint}', '${scenario.method}')" style="margin-top: 5px; padding: 5px 10px; font-size: 0.9em;">실행</button>
+                    </div>
+                `;
+            });
+            
+            resultHtml += '</div>';
+            document.getElementById('api-result').innerHTML = resultHtml;
+            log('✅ 테스트 시나리오 로드 완료');
+        }
+
+        // 시나리오 실행
+        async function runScenario(service, endpoint, method) {
+            document.getElementById('service-select').value = service;
+            document.getElementById('api-endpoint').value = endpoint;
+            document.getElementById('http-method').value = method;
+            
+            await testMicroservice();
+        }
+
+        // 실패 시뮬레이션
+        async function simulateFailure() {
+            log('💥 실패 시뮬레이션을 시작합니다...');
+            
+            try {
+                // 존재하지 않는 엔드포인트 호출로 실패 유도
+                const response = await fetch('http://localhost:8080/gateway/users/simulate-failure', {
+                    credentials: 'include'
+                });
+                
+                log('📊 실패 시뮬레이션 완료. 서킷 브레이커 상태를 확인하세요.');
+                
+                // 서킷 브레이커 상태 다시 확인
+                setTimeout(() => {
+                    checkCircuitBreakers();
+                }, 2000);
+                
+            } catch (error) {
+                log('💥 의도된 실패 발생: ' + error.message, 'error');
+            }
+        }
+
+        // MSA 통합 테스트 시작
+        function startMSATest() {
+            log('🚀 MSA 통합 테스트 시퀀스를 시작합니다!');
+            log('1️⃣ 유레카 서비스 레지스트리 확인 완료');
+            log('2️⃣ API Gateway 상태 확인 완료');
+            log('3️⃣ Auth0 인증을 진행해주세요');
+            log('4️⃣ 마이크로서비스 API 테스트를 실행해주세요');
+            log('5️⃣ 서킷 브레이커 모니터링을 확인해주세요');
+        }
+
+        // 유레카 UI 열기
+        function openEurekaUI() {
+            window.open('http://localhost:8761', '_blank');
+            log('🌐 유레카 서버 UI가 새 탭에서 열렸습니다.');
+        }
+    </script>
+</body>
+</html>

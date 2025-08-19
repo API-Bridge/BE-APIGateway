@@ -38,7 +38,7 @@ public class FallbackController {
      * @param exchange ServerWebExchange 웹 교환 객체
      * @return Mono<Void> Service Unavailable 응답
      */
-    @GetMapping("/service-unavailable")
+    @RequestMapping("/service-unavailable")
     @Operation(
         summary = "Service Unavailable Fallback", 
         description = """
@@ -78,7 +78,7 @@ public class FallbackController {
      * @param exchange ServerWebExchange 웹 교환 객체
      * @return Mono<Void> 서비스별 맞춤 에러 응답
      */
-    @GetMapping("/{serviceName}")
+    @RequestMapping("/{serviceName}")
     public Mono<Void> serviceFallback(@PathVariable String serviceName, ServerWebExchange exchange) {
         ServerHttpResponse response = exchange.getResponse();
         String requestId = generateRequestId();

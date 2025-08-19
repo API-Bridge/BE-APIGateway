@@ -33,13 +33,13 @@ import java.net.URI;
 @Tag(name = "Public Controller", description = "공개 API - 인증 없이 접근 가능한 엔드포인트")
 public class PublicController {
 
-    @Value("${auth0.issuerUri}")
+    @Value("${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}")
     private String issuerUri;
 
-    @Value("${auth0.client-id:}")
+    @Value("${AUTH0_CLIENT_ID:}")
     private String clientId;
 
-    @Value("${auth0.postLogoutUri:http://localhost:8080/public/auth-test.html}")
+    @Value("${auth0.logout-redirect-uri:http://localhost:8080/public/auth-test.html}")
     private String defaultPostLogoutUri;
 
     /**

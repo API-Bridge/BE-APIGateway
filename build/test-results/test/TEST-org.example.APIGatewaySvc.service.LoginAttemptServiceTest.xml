@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" tests="10" skipped="0" failures="1" errors="0" timestamp="2025-08-17T23:07:09.340Z" hostname="SEOKYEEUN" time="0.117">
+  <properties/>
+  <testcase name="shouldGetLoginAttemptStats()" classname="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" time="0.07"/>
+  <testcase name="shouldRecordFirstLoginFailure()" classname="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" time="0.007"/>
+  <testcase name="shouldRecordIpLoginFailure()" classname="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" time="0.005"/>
+  <testcase name="shouldRecordLoginSuccess()" classname="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" time="0.005">
+    <failure message="org.mockito.exceptions.misusing.UnnecessaryStubbingException: &#10;Unnecessary stubbings detected.&#10;Clean &amp; maintainable test code requires zero unnecessary code.&#10;Following stubbings are unnecessary (click to navigate to relevant line of code):&#10;  1. -&gt; at org.example.APIGatewaySvc.service.LoginAttemptServiceTest.setUp(LoginAttemptServiceTest.java:35)&#10;Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class." type="org.mockito.exceptions.misusing.UnnecessaryStubbingException">org.mockito.exceptions.misusing.UnnecessaryStubbingException: 
+Unnecessary stubbings detected.
+Clean &amp; maintainable test code requires zero unnecessary code.
+Following stubbings are unnecessary (click to navigate to relevant line of code):
+  1. -&gt; at org.example.APIGatewaySvc.service.LoginAttemptServiceTest.setUp(LoginAttemptServiceTest.java:35)
+Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class.
+	at app//org.mockito.junit.jupiter.MockitoExtension.afterEach(MockitoExtension.java:197)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="shouldGetAttemptCount()" classname="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" time="0.003"/>
+  <testcase name="shouldBlockUserAfterMaxAttempts()" classname="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" time="0.008"/>
+  <testcase name="shouldReturnZeroWhenNoAttempts()" classname="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" time="0.003"/>
+  <testcase name="shouldBlockIpAfterMaxAttempts()" classname="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" time="0.003"/>
+  <testcase name="shouldGetIpAttemptCount()" classname="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" time="0.003"/>
+  <testcase name="shouldGetRemainingAttempts()" classname="org.example.APIGatewaySvc.service.LoginAttemptServiceTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

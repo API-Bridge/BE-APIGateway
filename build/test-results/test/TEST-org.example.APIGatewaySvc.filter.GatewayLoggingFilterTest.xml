@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2025-08-13T13:37:01.198Z" hostname="SEOKYEEUN" time="0.347">
+<testsuite name="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2025-08-17T23:07:03.515Z" hostname="SEOKYEEUN" time="0.318">
   <properties/>
-  <testcase name="shouldExtractRequestIdFromHeader()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.12"/>
-  <testcase name="shouldHaveCorrectOrder()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.003"/>
-  <testcase name="shouldLogRequestStartAndEnd()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.013"/>
-  <testcase name="shouldLogRequestError()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.01"/>
-  <testcase name="shouldMeasureDurationAccurately()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.148"/>
-  <testcase name="shouldExtractClientIpFromHeaders()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.01"/>
-  <testcase name="shouldHandleResponseSize()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.006"/>
-  <testcase name="shouldHandleNullResponseSize()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.013"/>
-  <testcase name="shouldDetectPublicApiName()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.012"/>
-  <testcase name="shouldCollectImportantHeaders()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.006"/>
-  <system-out><![CDATA[22:37:01.286 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
-22:37:01.333 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
-22:37:01.342 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
-22:37:01.371 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
-22:37:01.504 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
-22:37:01.511 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
-22:37:01.525 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
-22:37:01.534 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
-22:37:01.543 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
+  <testcase name="shouldExtractRequestIdFromHeader()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.087"/>
+  <testcase name="shouldHaveCorrectOrder()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.004"/>
+  <testcase name="shouldLogRequestStartAndEnd()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.018"/>
+  <testcase name="shouldLogRequestError()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.011"/>
+  <testcase name="shouldMeasureDurationAccurately()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.138"/>
+  <testcase name="shouldExtractClientIpFromHeaders()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.014"/>
+  <testcase name="shouldHandleResponseSize()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.011"/>
+  <testcase name="shouldHandleNullResponseSize()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.011"/>
+  <testcase name="shouldDetectPublicApiName()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.009"/>
+  <testcase name="shouldCollectImportantHeaders()" classname="org.example.APIGatewaySvc.filter.GatewayLoggingFilterTest" time="0.009"/>
+  <system-out><![CDATA[08:07:03.581 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
+08:07:03.624 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
+08:07:03.631 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
+08:07:03.658 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
+08:07:03.788 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
+08:07:03.800 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
+08:07:03.812 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
+08:07:03.823 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
+08:07:03.831 DEBUG [] o.e.A.filter.GatewayLoggingFilter - Cannot extract user ID: fallbackValue must not be null
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

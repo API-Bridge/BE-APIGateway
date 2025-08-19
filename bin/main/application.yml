@@ -1,0 +1,642 @@
+# =================================================================
+#                 API Gateway 공통 설정
+# =================================================================
+spring:
+  application:
+    name: API-GATEWAY
+  main:
+    allow-circular-references: true
+
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      client-id: ${spring.application.name}-logging-producer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 5
+      buffer-memory: 33554432
+      compression-type: snappy
+      enable-idempotence: true
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      group-id: gateway-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+      enable-auto-commit: false
+    listener:
+      ack-mode: manual_immediate
+    template:
+      default-topic: logs.gateway
+
+  # Redis 설정
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      timeout: 5000ms
+      connect-timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 3000ms
+        shutdown-timeout: 100ms
+
+  # Spring Cloud Gateway 설정 (모든 프로필에서 공통 적용)
+  cloud:
+    gateway:
+      # CORS 설정 - Auth0 인증과 호환되는 설정
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            # allowCredentials=true일 때는 구체적인 origin만 허용 (와일드카드 불가)
+            allowedOriginPatterns: 
+              - "http://localhost:3000"
+              - "http://localhost:8080"
+              - "https://*.yourdomain.com"
+              - "https://yourdomain.com"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowedHeaders:
+              - "*"
+            exposedHeaders:
+              - "Authorization"
+              - "X-Gateway-Response-Time"
+              - "X-Rate-Limit-Remaining"
+            # Auth0 인증 쿠키 전송을 위해 true 설정
+            allowCredentials: true
+            maxAge: 3600
+      # 기본 필터 설정
+      default-filters:
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+            backoff:
+              first-backoff: 50ms
+              max-backoff: 500ms
+              factor: 2
+        - AddRequestHeader=X-Gateway, api-gateway
+        # TokenRelay 필터를 먼저 적용 (JWT 토큰 전달)
+        - TokenRelay=
+        # 보안을 위해 Cookie 헤더 제거 (JWT 사용하므로)
+        - RemoveRequestHeader=Cookie
+        - name: StandardResponseFilter
+      routes:
+        # User Service 라우트 (JWT 인증 필요)
+        # /api/users/** → /users/** (StripPrefix=1)
+        - id: user-service-protected
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=1  # /api 제거하여 /users/**로 전달
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@userServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+        
+        # Mission Service 라우트 - 현재 연동 전이므로 주석 처리
+        # TODO: Mission Service 연동 후 주석 해제
+        # - id: mission-service-protected
+        #   uri: lb://MISSION-SERVICE
+        #   predicates:
+        #     - Path=/api/missions/**
+        #   filters:
+        #     - StripPrefix=1  # /api 제거하여 /missions/**로 전달
+        #     - TokenRelay=
+        #     - name: RequestRateLimiter
+        #       args:
+        #         rate-limiter: "#{@missionServiceRateLimiter}"
+        #         key-resolver: "#{@userKeyResolver}"
+        #         deny-empty-key: false
+        #     - name: CircuitBreaker
+        #       args:
+        #         name: missionSvcCb
+        #         fallback-uri: forward:/fallback/mission-service
+
+  # WebFlux 세션 설정 (OAuth2 Login용)
+  webflux:
+    session:
+      timeout: 3600 # 1시간
+  
+  # OAuth2 / JWT 설정 (Auth0 통합)
+  security:
+    oauth2:
+      client:
+        registration:
+          auth0:
+            client-id: ${AUTH0_CLIENT_ID}
+            client-secret: ${AUTH0_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - openid
+              - profile
+              - email
+              # Auth0에서 API 접근을 위한 audience 포함
+        provider:
+          auth0:
+            issuer-uri: ${auth0.issuerUri}
+            authorization-uri: ${auth0.issuerUri}authorize
+            token-uri: ${auth0.issuerUri}oauth/token
+            user-info-uri: ${auth0.issuerUri}userinfo
+            jwk-set-uri: ${auth0.issuerUri}.well-known/jwks.json
+            user-name-attribute: sub
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}
+          # JWT 검증을 위한 JWKS URI (자동 설정됨)
+          # jwk-set-uri: ${AUTH0_ISSUER_URI}/.well-known/jwks.json
+
+# Auth0 설정 (모든 프로필에서 공통 적용)
+auth0:
+  issuerUri: ${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}
+  audience: ${AUTH0_AUDIENCE:https://api.api-bridge.com}  # API Gateway의 audience
+  client-id: ${AUTH0_CLIENT_ID}
+  logout-redirect-uri: ${AUTH0_LOGOUT_REDIRECT_URI:http://localhost:8080/auth/logout-success}
+
+# Eureka 서비스 디스커버리 설정 (모든 프로필에서 공통 적용)
+eureka:
+  client:
+    enabled: true
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}
+    # 서비스 레지스트리 갱신 주기 (기본값: 30초)
+    registry-fetch-interval-seconds: 10
+    # 초기 레지스트리 로딩 대기 시간
+    initial-instance-info-replication-interval-seconds: 5
+    # 유레카 서버와의 연결 설정
+    eureka-server-connect-timeout-seconds: 5
+    eureka-server-read-timeout-seconds: 8
+  instance:
+    # IP 주소 우선 사용 (Docker/K8s 환경에서 중요)
+    prefer-ip-address: true
+    # 인스턴스 ID 설정 (중복 방지)
+    instance-id: ${spring.application.name}:${spring.cloud.client.hostname}:${server.port}
+    # 하트비트 간격 (기본값: 30초)
+    lease-renewal-interval-in-seconds: 10
+    # 인스턴스 만료 시간 (기본값: 90초)
+    lease-expiration-duration-in-seconds: 30
+    # 헬스체크 활성화
+    health-check-url-path: /actuator/health
+    status-page-url-path: /actuator/info
+    # 메타데이터 설정 (서비스 정보)
+    metadata-map:
+      version: ${BUILD_VERSION:1.0.0}
+      environment: ${SPRING_PROFILES_ACTIVE:local}
+      management.port: ${server.port}
+      # Auth0 정보 (다른 서비스에서 참조 가능)
+      auth.issuer: ${auth0.issuerUri}
+      auth.audience: ${auth0.audience}
+
+# =================================================================
+#                 프로필별 설정 (로컬 환경)
+# =================================================================
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  cloud:
+    gateway:
+      default-filters:
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+            backoff:
+              first-backoff: 50ms
+              max-backoff: 500ms
+              factor: 2
+        - AddRequestHeader=X-Gateway, api-gateway
+        - RemoveRequestHeader=Cookie
+        - name: StandardResponseFilter
+        # Global Rate Limiting은 주석 처리 (라우트별로 개별 설정)
+        # - name: RequestRateLimiter
+        #   args:
+        #     rate-limiter: "#{@defaultRedisRateLimiter}"
+        #     key-resolver: "#{@userKeyResolver}"
+        #     deny-empty-key: false
+      routes:
+        # Rate Limiting 테스트 전용 라우트 (외부 API로 요청하여 Rate Limiter 테스트)
+        - id: ratelimit-test-route
+          uri: http://httpbin.org
+          predicates:
+            - Path=/gateway/ratelimit/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@defaultRedisRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: RewritePath
+              args:
+                regexp: /gateway/ratelimit/(?<segment>.*)
+                replacement: /status/200
+        
+        # Mock 서비스 라우트들 (실제 마이크로서비스가 없을 때 테스트용)
+        - id: mock-user-service
+          uri: http://localhost:8080
+          predicates:
+            - Path=/mock/users/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@userServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+        
+        - id: mock-api-management
+          uri: http://localhost:8080
+          predicates:
+            - Path=/mock/apimgmt/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+
+        - id: mock-custom-api-management
+          uri: http://localhost:8080
+          predicates:
+            - Path=/mock/customapi/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+
+        - id: mock-ai-feature
+          uri: http://localhost:8080
+          predicates:
+            - Path=/mock/aifeature/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@aiServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+
+        - id: mock-system-management
+          uri: http://localhost:8080
+          predicates:
+            - Path=/mock/sysmgmt/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+
+        # 서비스별 라우팅 설정 (로컬 환경용)
+        - id: user-service-local
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/gateway/users/**
+          filters:
+            - StripPrefix=2
+            - name: OAuth2TokenRelayFilter
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@userServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+
+        - id: api-management-service-local
+          uri: lb://BE-APIManagementService
+          predicates:
+            - Path=/gateway/apimgmt/**
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: apiMgmtSvcCb
+                fallback-uri: forward:/fallback/api-management
+
+        - id: custom-api-management-service-local
+          uri: lb://BE-CustomAPIManagementService
+          predicates:
+            - Path=/gateway/customapi/**
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: customApiMgmtSvcCb
+                fallback-uri: forward:/fallback/custom-api-management
+
+        - id: ai-feature-service-local
+          uri: lb://BE-AIFeatureService
+          predicates:
+            - Path=/gateway/aifeature/**
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@aiServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: aiFeatureSvcCb
+                fallback-uri: forward:/fallback/ai-feature
+
+        - id: system-management-service-local
+          uri: lb://BE-SystemManagementService
+          predicates:
+            - Path=/gateway/sysmgmt/**
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: systemMgmtSvcCb
+                fallback-uri: forward:/fallback/system-management
+
+  server:
+    port: ${SERVER_PORT:8080}
+
+# =================================================================
+#                 프로필별 설정 (프로덕션 환경)
+# =================================================================
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://BE-UserService
+          predicates:
+            - Path=/gateway/users/**
+          filters:
+            - StripPrefix=2
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@userServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+
+        - id: api-management-service
+          uri: lb://BE-APIManagementService
+          predicates:
+            - Path=/gateway/apimgmt/**
+          filters:
+            - StripPrefix=2
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: apiMgmtSvcCb
+                fallback-uri: forward:/fallback/api-management
+
+        - id: custom-api-management-service
+          uri: lb://BE-CustomAPIManagementService
+          predicates:
+            - Path=/gateway/customapi/**
+          filters:
+            - StripPrefix=2
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: customApiMgmtSvcCb
+                fallback-uri: forward:/fallback/custom-api-management
+
+        - id: ai-feature-service
+          uri: lb://BE-AIFeatureService
+          predicates:
+            - Path=/gateway/aifeature/**
+          filters:
+            - StripPrefix=2
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@aiServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: aiFeatureSvcCb
+                fallback-uri: forward:/fallback/ai-feature
+
+        - id: system-management-service
+          uri: lb://BE-SystemManagementService
+          predicates:
+            - Path=/gateway/sysmgmt/**
+          filters:
+            - StripPrefix=2
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: systemMgmtSvcCb
+                fallback-uri: forward:/fallback/system-management
+
+# =================================================================
+#                 액추에이터 및 기타 설정 (공통)
+# =================================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,gateway,circuitbreakers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+      show-components: always
+    gateway:
+      access: read_only
+    circuitbreakers:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      service: api-gateway
+      version: ${BUILD_VERSION:dev}
+      environment: ${SPRING_PROFILES_ACTIVE:local}
+    export:
+      prometheus:
+        descriptions: true
+        histogram-flavor: prometheus
+  tracing:
+    sampling:
+      probability: 1.0
+  health:
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        slowCallDurationThreshold: 3s
+        slowCallRateThreshold: 50
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - java.io.IOException
+          - org.springframework.web.reactive.function.client.WebClientRequestException
+          - org.springframework.web.reactive.function.client.WebClientResponseException.ServiceUnavailable
+        ignoreExceptions:
+          - org.springframework.web.reactive.function.client.WebClientResponseException.BadRequest
+          - org.springframework.web.reactive.function.client.WebClientResponseException.NotFound
+    instances:
+      userSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
+      apiMgmtSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
+      customApiMgmtSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
+      aiFeatureSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
+        slowCallDurationThreshold: 5s
+        slowCallRateThreshold: 30
+      systemMgmtSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
+  metrics:
+    enabled: true
+    legacy:
+      enabled: false
+  prometheus:
+    enabled: true
+
+# 로깅 설정
+logging:
+  level:
+    root: INFO
+    org.example.APIGatewaySvc: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway.filter.ratelimit: DEBUG
+    org.springframework.data.redis: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2.jwt: DEBUG
+    com.nimbusds: DEBUG
+    reactor.netty: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId:-}] %logger{36} - %msg%n"
+
+# 서버 설정
+server:
+  port: ${SERVER_PORT:8080}
+  netty:
+    connection-timeout: 2s
+    idle-timeout: 15s
+
+# Gateway 로깅 설정
+gateway:
+  logging:
+    enabled: ${GATEWAY_LOGGING_ENABLED:true}
+    kafka:
+      topic: ${GATEWAY_LOG_TOPIC:logs.gateway}
+    mask-sensitive-data: ${GATEWAY_MASK_SENSITIVE_DATA:true}
+
+# Rate Limiting 설정
+rate-limit:
+  default:
+    replenish-rate: ${RATE_LIMIT_REPLENISH_RATE:10}
+    burst-capacity: ${RATE_LIMIT_BURST_CAPACITY:20}
+    requested-tokens: ${RATE_LIMIT_REQUESTED_TOKENS:1}
+  user-service:
+    replenish-rate: 20
+    burst-capacity: 40
+  ai-service:
+    replenish-rate: 5
+    burst-capacity: 10
+    requested-tokens: 2
+  management:
+    replenish-rate: 15
+    burst-capacity: 30
+
+# Eureka 클라이언트 설정
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka/}
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  show-actuator: true

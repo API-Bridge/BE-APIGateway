@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.APIGatewaySvcApplicationTests" tests="1" skipped="1" failures="0" errors="0" timestamp="2025-08-17T23:06:54.034Z" hostname="SEOKYEEUN" time="0.0">
+  <properties/>
+  <testcase name="contextLoads()" classname="org.example.APIGatewaySvc.APIGatewaySvcApplicationTests" time="0.0">
+    <skipped/>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

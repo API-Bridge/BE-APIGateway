@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth0 로그인 테스트</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .success {
+            background-color: #28a745;
+        }
+        .danger {
+            background-color: #dc3545;
+        }
+        .info {
+            background-color: #17a2b8;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            background-color: #f8f9fa;
+        }
+        pre {
+            background-color: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+            background-color: #f1f3f4;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.success { background-color: #d4edda; color: #155724; }
+        .status.error { background-color: #f8d7da; color: #721c24; }
+        .status.pending { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Auth0 로그인 테스트</h1>
+        <p>API Gateway의 Auth0 OAuth2 로그인 기능을 테스트합니다.</p>
+
+        <div class="step">
+            <h3>1. 현재 인증 상태 확인</h3>
+            <button class="button info" onclick="checkAuthStatus()">인증 상태 확인</button>
+            <div id="authStatus" class="card" style="display:none;">
+                <pre id="authStatusResult"></pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>2. Auth0 로그인 시작</h3>
+            <p>아래 버튼을 클릭하면 Auth0 로그인 페이지로 리다이렉트됩니다.</p>
+            <a href="/oauth2/authorization/auth0" class="button success">🚀 Auth0 로그인 시작</a>
+        </div>
+
+        <div class="step">
+            <h3>3. 로그인 성공 후 사용자 정보 확인</h3>
+            <p>로그인 완료 후 아래 버튼으로 전체 사용자 정보를 확인할 수 있습니다.</p>
+            <button class="button" onclick="getUserInfo()">사용자 정보 조회</button>
+            <div id="userInfo" class="card" style="display:none;">
+                <pre id="userInfoResult"></pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>4. 보호된 엔드포인트 테스트</h3>
+            <button class="button" onclick="testProtectedEndpoint()">보호된 엔드포인트 테스트</button>
+            <div id="protectedResult" class="card" style="display:none;">
+                <pre id="protectedEndpointResult"></pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>5. 로그아웃</h3>
+            <a href="/auth/logout" class="button danger">🚪 로그아웃</a>
+        </div>
+
+        <div class="step">
+            <h3>📋 테스트 가이드</h3>
+            <ol>
+                <li>먼저 "인증 상태 확인"으로 현재 상태를 확인하세요</li>
+                <li>"Auth0 로그인 시작"을 클릭하여 Auth0 로그인을 완료하세요</li>
+                <li>로그인 완료 후 이 페이지로 돌아와서 "사용자 정보 조회"를 클릭하세요</li>
+                <li>전체 Auth0 사용자 정보가 JSON 형태로 표시됩니다</li>
+                <li>"보호된 엔드포인트 테스트"로 인증이 필요한 API를 테스트하세요</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/auth/login-info');
+                const data = await response.json();
+                
+                document.getElementById('authStatus').style.display = 'block';
+                document.getElementById('authStatusResult').textContent = JSON.stringify(data, null, 2);
+                
+                // 상태에 따른 메시지 표시
+                if (data.authenticated) {
+                    showStatus('인증됨 ✅', 'success');
+                } else {
+                    showStatus('인증되지 않음 ❌', 'error');
+                }
+            } catch (error) {
+                document.getElementById('authStatus').style.display = 'block';
+                document.getElementById('authStatusResult').textContent = `Error: ${error.message}`;
+                showStatus('오류 발생 ⚠️', 'error');
+            }
+        }
+
+        async function getUserInfo() {
+            try {
+                const response = await fetch('/auth/login-success');
+                const data = await response.json();
+                
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('userInfoResult').textContent = JSON.stringify(data, null, 2);
+                
+                if (response.ok && data.status === 'success') {
+                    showStatus('사용자 정보 조회 성공 ✅', 'success');
+                    
+                    // 사용자 정보 하이라이트
+                    if (data.user && data.user.email) {
+                        showStatus(`로그인됨: ${data.user.email} (${data.user.sub})`, 'success');
+                    }
+                } else {
+                    showStatus('로그인이 필요합니다 ⚠️', 'pending');
+                }
+            } catch (error) {
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('userInfoResult').textContent = `Error: ${error.message}`;
+                showStatus('오류 발생 ⚠️', 'error');
+            }
+        }
+
+        async function testProtectedEndpoint() {
+            try {
+                const response = await fetch('/test/protected');
+                const data = await response.json();
+                
+                document.getElementById('protectedResult').style.display = 'block';
+                document.getElementById('protectedEndpointResult').textContent = JSON.stringify(data, null, 2);
+                
+                if (response.ok) {
+                    showStatus('보호된 엔드포인트 접근 성공 ✅', 'success');
+                } else {
+                    showStatus('인증 필요 또는 권한 부족 ❌', 'error');
+                }
+            } catch (error) {
+                document.getElementById('protectedResult').style.display = 'block';
+                document.getElementById('protectedEndpointResult').textContent = `Error: ${error.message}`;
+                showStatus('오류 발생 ⚠️', 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            // 기존 상태 메시지 제거
+            const existingStatus = document.querySelector('.status-message');
+            if (existingStatus) {
+                existingStatus.remove();
+            }
+            
+            // 새 상태 메시지 추가
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type} status-message`;
+            statusDiv.textContent = message;
+            statusDiv.style.margin = '10px 0';
+            
+            document.querySelector('.container').insertBefore(statusDiv, document.querySelector('.step'));
+        }
+
+        // 페이지 로드시 자동으로 인증 상태 확인
+        window.addEventListener('load', function() {
+            checkAuthStatus();
+        });
+    </script>
+</body>
+</html>

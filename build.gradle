@@ -44,8 +44,8 @@ dependencies {
 
     // Service discovery / load balancing (prod with lb:// URIs)
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
-    // (Optional) Eureka client
-    // implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client' // Kafka 테스트를 위해 임시 비활성화
+    // Eureka client for service discovery
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
     // Spring Kafka
     implementation 'org.springframework.kafka:spring-kafka'

@@ -60,7 +60,7 @@ spring:
       resourceserver:
         jwt:
           # 테스트용 Mock JWKS URI
-          issuer-uri: ${auth0.issuerUri}
+          issuer-uri: ${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}
 
   # 테스트용 Redis 설정 (Embedded 또는 TestContainers 사용)
   redis:

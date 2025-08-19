@@ -1,0 +1,15 @@
+✅ 올바른 Kafka 테스트 명령어 (복사해서 PowerShell에 붙여넣기)
+
+1️⃣ 메시지 보내기 (최신 방법):
+echo '{"message": "Hello Kafka!", "user": "beginner", "time": "now"}' | docker exec -i kafka kafka-console-producer --bootstrap-server localhost:9092 --topic logs.gateway
+
+2️⃣ 방금 보낸 메시지 확인:
+docker exec kafka kafka-console-consumer --bootstrap-server localhost:9092 --topic logs.gateway --from-beginning --max-messages 1 --timeout-ms 5000
+
+3️⃣ 다른 토픽에도 메시지 보내기:
+echo '{"event": "user_login", "status": "success"}' | docker exec -i kafka kafka-console-producer --bootstrap-server localhost:9092 --topic events.auth
+
+4️⃣ 인증 이벤트 메시지 확인:
+docker exec kafka kafka-console-consumer --bootstrap-server localhost:9092 --topic events.auth --from-beginning --max-messages 1 --timeout-ms 5000
+
+🎯 성공하면 JSON 형태의 메시지가 화면에 출력됩니다!

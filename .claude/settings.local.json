@@ -20,8 +20,18 @@
       "Bash(powershell:*)",
       "Bash(docker-compose:*)",
       "Bash(docker exec:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "WebFetch(domain:auth0.com)",
+      "WebSearch",
+      "Bash(gradlew.bat build:*)",
+      "Bash(.gradlew.bat build)",
+      "Bash(cp:*)",
+      "Bash(.gradlew.bat:*)",
+      "Bash(gradlew.bat bootRun:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "C:\\c\\workspace"
+    ]
   }
 }
