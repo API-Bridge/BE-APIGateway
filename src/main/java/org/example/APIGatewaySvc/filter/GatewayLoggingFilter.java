@@ -28,6 +28,11 @@ import java.util.Optional;
  * 민감 정보 마스킹 처리 포함
  */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "kafka.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class GatewayLoggingFilter implements GlobalFilter, Ordered {
 
     private static final Logger logger = LoggerFactory.getLogger(GatewayLoggingFilter.class);

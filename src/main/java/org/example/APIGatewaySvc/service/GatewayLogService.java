@@ -17,6 +17,11 @@ import java.util.concurrent.CompletableFuture;
  * Kafka를 통한 비동기 로그 전송 및 민감 정보 마스킹 처리
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "kafka.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class GatewayLogService {
 
     private static final Logger logger = LoggerFactory.getLogger(GatewayLogService.class);

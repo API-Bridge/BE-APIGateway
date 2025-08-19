@@ -18,6 +18,11 @@ import java.time.Instant;
  * - 파이프라이닝을 통한 성능 최적화
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "redis.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class LoginAttemptService {
     
     private static final int MAX_ATTEMPTS = 5;

@@ -25,6 +25,11 @@ import java.util.Map;
 @Tag(name = "Block Management", description = "사용자/IP/API키 차단 관리 API")
 @RestController
 @RequestMapping("/internal/block")
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "redis.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class InternalBlockController {
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;

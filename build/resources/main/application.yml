@@ -4,36 +4,38 @@
 spring:
   application:
     name: api-gateway
+  profiles:
+    active: local
   main:
     allow-circular-references: true
 
-  # Kafka 설정
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    producer:
-      client-id: ${spring.application.name}-logging-producer
-      acks: all
-      retries: 3
-      batch-size: 16384
-      linger-ms: 5
-      buffer-memory: 33554432
-      compression-type: snappy
-      enable-idempotence: true
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    consumer:
-      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-      group-id: gateway-consumer-group
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"
-      enable-auto-commit: false
-    listener:
-      ack-mode: manual_immediate
-    template:
-      default-topic: logs.gateway
+  # Kafka 설정 - 일시 비활성화
+  # kafka:
+  #   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  #   producer:
+  #     client-id: ${spring.application.name}-logging-producer
+  #     acks: all
+  #     retries: 3
+  #     batch-size: 16384
+  #     linger-ms: 5
+  #     buffer-memory: 33554432
+  #     compression-type: snappy
+  #     enable-idempotence: true
+  #     key-serializer: org.apache.kafka.common.serialization.StringSerializer
+  #     value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  #   consumer:
+  #     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  #     group-id: gateway-consumer-group
+  #     auto-offset-reset: earliest
+  #     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  #     value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+  #     properties:
+  #       spring.json.trusted.packages: "*"
+  #     enable-auto-commit: false
+  #   listener:
+  #     ack-mode: manual_immediate
+  #   template:
+  #     default-topic: logs.gateway
 
   # Redis 설정
   data:
@@ -92,11 +94,6 @@ spring:
     activate:
       on-profile: local
 
-  eureka:
-    client:
-      enabled: true
-      service-url:
-        defaultZone: ${EUREKA_SERVER_URL:http://localhost:8761/eureka}
 
   cloud:
     gateway:
@@ -120,253 +117,141 @@ spring:
         #     key-resolver: "#{@userKeyResolver}"
         #     deny-empty-key: false
       routes:
-        # Rate Limiting 테스트 전용 라우트 (외부 API로 요청하여 Rate Limiter 테스트)
-        - id: ratelimit-test-route
-          uri: http://httpbin.org
-          predicates:
-            - Path=/gateway/ratelimit/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@defaultRedisRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
-            - name: RewritePath
-              args:
-                regexp: /gateway/ratelimit/(?<segment>.*)
-                replacement: /status/200
+        # Rate Limiting 테스트 전용 라우트 - 일시 비활성화
+        # - id: ratelimit-test-route
+        #   uri: http://httpbin.org
+        #   predicates:
+        #     - Path=/gateway/ratelimit/**
+        #   filters:
+        #     - name: RequestRateLimiter
+        #       args:
+        #         rate-limiter: "#{@defaultRedisRateLimiter}"
+        #         key-resolver: "#{@userKeyResolver}"
+        #         deny-empty-key: false
+        #     - name: RewritePath
+        #       args:
+        #         regexp: /gateway/ratelimit/(?<segment>.*)
+        #         replacement: /status/200
         
-        # Mock 서비스 라우트들 (실제 마이크로서비스가 없을 때 테스트용)
-        - id: mock-user-service
-          uri: http://localhost:8080
-          predicates:
-            - Path=/mock/users/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@userServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
-        
-        - id: mock-api-management
-          uri: http://localhost:8080
-          predicates:
-            - Path=/mock/apimgmt/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
-
-        - id: mock-custom-api-management
-          uri: http://localhost:8080
-          predicates:
-            - Path=/mock/customapi/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
-
-        - id: mock-ai-feature
-          uri: http://localhost:8080
-          predicates:
-            - Path=/mock/aifeature/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@aiServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
-
-        - id: mock-system-management
-          uri: http://localhost:8080
-          predicates:
-            - Path=/mock/sysmgmt/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
+        # Mock 서비스 라우트들 - 일시 비활성화 (Redis 없이 실행하기 위함)
+        # - id: mock-user-service
+        #   uri: http://localhost:8080
+        #   predicates:
+        #     - Path=/mock/users/**
 
         # 서비스별 라우팅 설정 (로컬 환경용)
         - id: user-service-local
-          uri: lb://BE-UserService
+          uri: http://localhost:8081
           predicates:
             - Path=/gateway/users/**
           filters:
             - StripPrefix=2
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@userServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
+            # Rate Limiting 일시 비활성화 (Redis 없이 실행하기 위함)
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@userServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
             - name: CircuitBreaker
               args:
                 name: userSvcCb
                 fallback-uri: forward:/fallback/user-service
 
-        - id: api-management-service-local
-          uri: lb://BE-APIManagementService
-          predicates:
-            - Path=/gateway/apimgmt/**
-          filters:
-            - StripPrefix=2
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
-            - name: CircuitBreaker
-              args:
-                name: apiMgmtSvcCb
-                fallback-uri: forward:/fallback/api-management
+        # 추후 포트 결정 후 활성화 예정
+        # - id: api-management-service-local
+        #   uri: http://localhost:8082
+        #   predicates:
+        #     - Path=/gateway/apimgmt/**
+        #   filters:
+        #     - StripPrefix=2
+        #     - name: RequestRateLimiter
+        #       args:
+        #         rate-limiter: "#{@managementServiceRateLimiter}"
+        #         key-resolver: "#{@userKeyResolver}"
+        #         deny-empty-key: false
+        #     - name: CircuitBreaker
+        #       args:
+        #         name: apiMgmtSvcCb
+        #         fallback-uri: forward:/fallback/api-management
 
-        - id: custom-api-management-service-local
-          uri: lb://BE-CustomAPIManagementService
-          predicates:
-            - Path=/gateway/customapi/**
-          filters:
-            - StripPrefix=2
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
-            - name: CircuitBreaker
-              args:
-                name: customApiMgmtSvcCb
-                fallback-uri: forward:/fallback/custom-api-management
+        # - id: custom-api-management-service-local
+        #   uri: http://localhost:8083
+        #   predicates:
+        #     - Path=/gateway/customapi/**
+        #   filters:
+        #     - StripPrefix=2
+        #     - name: RequestRateLimiter
+        #       args:
+        #         rate-limiter: "#{@managementServiceRateLimiter}"
+        #         key-resolver: "#{@userKeyResolver}"
+        #         deny-empty-key: false
+        #     - name: CircuitBreaker
+        #       args:
+        #         name: customApiMgmtSvcCb
+        #         fallback-uri: forward:/fallback/custom-api-management
 
-        - id: ai-feature-service-local
-          uri: lb://BE-AIFeatureService
-          predicates:
-            - Path=/gateway/aifeature/**
-          filters:
-            - StripPrefix=2
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@aiServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
-            - name: CircuitBreaker
-              args:
-                name: aiFeatureSvcCb
-                fallback-uri: forward:/fallback/ai-feature
+        # - id: ai-feature-service-local
+        #   uri: http://localhost:8084
+        #   predicates:
+        #     - Path=/gateway/aifeature/**
+        #   filters:
+        #     - StripPrefix=2
+        #     - name: RequestRateLimiter
+        #       args:
+        #         rate-limiter: "#{@aiServiceRateLimiter}"
+        #         key-resolver: "#{@userKeyResolver}"
+        #         deny-empty-key: false
+        #     - name: CircuitBreaker
+        #       args:
+        #         name: aiFeatureSvcCb
+        #         fallback-uri: forward:/fallback/ai-feature
 
-        - id: system-management-service-local
-          uri: lb://BE-SystemManagementService
-          predicates:
-            - Path=/gateway/sysmgmt/**
-          filters:
-            - StripPrefix=2
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
-            - name: CircuitBreaker
-              args:
-                name: systemMgmtSvcCb
-                fallback-uri: forward:/fallback/system-management
+        # - id: system-management-service-local
+        #   uri: http://localhost:8085
+        #   predicates:
+        #     - Path=/gateway/sysmgmt/**
+        #   filters:
+        #     - StripPrefix=2
+        #     - name: RequestRateLimiter
+        #       args:
+        #         rate-limiter: "#{@managementServiceRateLimiter}"
+        #         key-resolver: "#{@userKeyResolver}"
+        #         deny-empty-key: false
+        #     - name: CircuitBreaker
+        #       args:
+        #         name: systemMgmtSvcCb
+        #         fallback-uri: forward:/fallback/system-management
 
   server:
     port: ${SERVER_PORT:8080}
 
 # =================================================================
-#                 프로필별 설정 (프로덕션 환경)
+#                 프로필별 설정 (프로덕션 환경) - 추후 필요시 활성화
 # =================================================================
----
-spring:
-  config:
-    activate:
-      on-profile: prod
-
-  cloud:
-    gateway:
-      routes:
-        - id: user-service
-          uri: lb://BE-UserService
-          predicates:
-            - Path=/gateway/users/**
-          filters:
-            - StripPrefix=2
-            - TokenRelay=
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@userServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: userSvcCb
-                fallback-uri: forward:/fallback/user-service
-
-        - id: api-management-service
-          uri: lb://BE-APIManagementService
-          predicates:
-            - Path=/gateway/apimgmt/**
-          filters:
-            - StripPrefix=2
-            - TokenRelay=
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: apiMgmtSvcCb
-                fallback-uri: forward:/fallback/api-management
-
-        - id: custom-api-management-service
-          uri: lb://BE-CustomAPIManagementService
-          predicates:
-            - Path=/gateway/customapi/**
-          filters:
-            - StripPrefix=2
-            - TokenRelay=
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: customApiMgmtSvcCb
-                fallback-uri: forward:/fallback/custom-api-management
-
-        - id: ai-feature-service
-          uri: lb://BE-AIFeatureService
-          predicates:
-            - Path=/gateway/aifeature/**
-          filters:
-            - StripPrefix=2
-            - TokenRelay=
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@aiServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: aiFeatureSvcCb
-                fallback-uri: forward:/fallback/ai-feature
-
-        - id: system-management-service
-          uri: lb://BE-SystemManagementService
-          predicates:
-            - Path=/gateway/sysmgmt/**
-          filters:
-            - StripPrefix=2
-            - TokenRelay=
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@managementServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-            - name: CircuitBreaker
-              args:
-                name: systemMgmtSvcCb
-                fallback-uri: forward:/fallback/system-management
+# ---
+# spring:
+#   config:
+#     activate:
+#       on-profile: prod
+#
+#   cloud:
+#     gateway:
+#       routes:
+#         - id: user-service
+#           uri: http://production-server:8081
+#           predicates:
+#             - Path=/gateway/users/**
+#           filters:
+#             - StripPrefix=2
+#             - TokenRelay=
+#             - name: RequestRateLimiter
+#               args:
+#                 rate-limiter: "#{@userServiceRateLimiter}"
+#                 key-resolver: "#{@userKeyResolver}"
+#             - name: CircuitBreaker
+#               args:
+#                 name: userSvcCb
+#                 fallback-uri: forward:/fallback/user-service
 
 # =================================================================
 #                 액추에이터 및 기타 설정 (공통)

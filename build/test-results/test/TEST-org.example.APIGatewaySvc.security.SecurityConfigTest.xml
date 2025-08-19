@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.security.SecurityConfigTest" tests="9" skipped="9" failures="0" errors="0" timestamp="2025-08-19T12:56:18.710Z" hostname="SEOKYEEUN" time="0.001">
+  <properties/>
+  <testcase name="유효한 JWT 토큰으로 보호된 경로 접근 시 라우팅 됨" classname="org.example.APIGatewaySvc.security.SecurityConfigTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="공개 경로는 인증 없이 접근 가능해야 함" classname="org.example.APIGatewaySvc.security.SecurityConfigTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="보호된 경로는 JWT 토큰 없이 접근 시 401 에러 반환" classname="org.example.APIGatewaySvc.security.SecurityConfigTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="만료된 JWT 토큰은 401 에러 반환" classname="org.example.APIGatewaySvc.security.SecurityConfigTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="잘못된 형식의 JWT 토큰은 401 에러 반환" classname="org.example.APIGatewaySvc.security.SecurityConfigTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="잘못된 오디언스의 JWT 토큰은 401 에러 반환" classname="org.example.APIGatewaySvc.security.SecurityConfigTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="Request ID가 모든 응답에 포함되어야 함" classname="org.example.APIGatewaySvc.security.SecurityConfigTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="CORS 설정이 올바르게 적용되어야 함" classname="org.example.APIGatewaySvc.security.SecurityConfigTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="민감한 정보가 에러 응답에 포함되지 않아야 함" classname="org.example.APIGatewaySvc.security.SecurityConfigTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

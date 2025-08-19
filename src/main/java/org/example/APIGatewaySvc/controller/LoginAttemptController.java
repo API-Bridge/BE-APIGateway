@@ -18,6 +18,11 @@ import java.util.Map;
 @Tag(name = "Login Attempt Monitoring", description = "로그인 시도 모니터링 API")
 @RestController
 @RequestMapping("/internal/login-attempts")
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "redis.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class LoginAttemptController {
     
     private final LoginAttemptService loginAttemptService;

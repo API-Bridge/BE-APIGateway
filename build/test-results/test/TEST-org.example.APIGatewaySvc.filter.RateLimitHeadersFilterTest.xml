@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest" tests="8" skipped="0" failures="2" errors="0" timestamp="2025-08-19T12:56:09.895Z" hostname="SEOKYEEUN" time="0.203">
+  <properties/>
+  <testcase name="shouldHandleEmptyRedisResponse()" classname="org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest" time="0.051"/>
+  <testcase name="shouldExtractClientIpFromXForwardedFor()" classname="org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest" time="0.005"/>
+  <testcase name="shouldHandleNoRateLimitKey()" classname="org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest" time="0.096">
+    <failure message="org.mockito.exceptions.verification.NeverWantedButInvoked: &#10;redisTemplate.opsForValue();&#10;Never wanted here:&#10;-&gt; at org.springframework.data.redis.core.ReactiveRedisTemplate.opsForValue(ReactiveRedisTemplate.java:623)&#10;But invoked here:&#10;-&gt; at org.example.APIGatewaySvc.filter.RateLimitHeadersFilter.getRateLimitStatus(RateLimitHeadersFilter.java:171) with arguments: []&#10;" type="org.mockito.exceptions.verification.NeverWantedButInvoked">org.mockito.exceptions.verification.NeverWantedButInvoked: 
+redisTemplate.opsForValue();
+Never wanted here:
+-&gt; at org.springframework.data.redis.core.ReactiveRedisTemplate.opsForValue(ReactiveRedisTemplate.java:623)
+But invoked here:
+-&gt; at org.example.APIGatewaySvc.filter.RateLimitHeadersFilter.getRateLimitStatus(RateLimitHeadersFilter.java:171) with arguments: []
+
+	at app//org.springframework.data.redis.core.ReactiveRedisTemplate.opsForValue(ReactiveRedisTemplate.java:623)
+	at app//org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.shouldHandleNoRateLimitKey(RateLimitHeadersFilterTest.java:120)
+	at java.base@17.0.13/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="shouldHandleZeroRemainingTokens()" classname="org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest" time="0.004"/>
+  <testcase name="shouldHaveCorrectOrder()" classname="org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest" time="0.005"/>
+  <testcase name="shouldHandleRedisError()" classname="org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest" time="0.025">
+    <failure message="org.mockito.exceptions.verification.NeverWantedButInvoked: &#10;responseHeaders.add(&#10;    &quot;X-RateLimit-Limit&quot;,&#10;    &lt;any string&gt;&#10;);&#10;Never wanted here:&#10;-&gt; at org.springframework.http.HttpHeaders.add(HttpHeaders.java:1762)&#10;But invoked here:&#10;-&gt; at org.example.APIGatewaySvc.filter.RateLimitHeadersFilter.lambda$addRateLimitHeaders$1(RateLimitHeadersFilter.java:76) with arguments: [X-RateLimit-Limit, 20]&#10;" type="org.mockito.exceptions.verification.NeverWantedButInvoked">org.mockito.exceptions.verification.NeverWantedButInvoked: 
+responseHeaders.add(
+    &quot;X-RateLimit-Limit&quot;,
+    &lt;any string&gt;
+);
+Never wanted here:
+-&gt; at org.springframework.http.HttpHeaders.add(HttpHeaders.java:1762)
+But invoked here:
+-&gt; at org.example.APIGatewaySvc.filter.RateLimitHeadersFilter.lambda$addRateLimitHeaders$1(RateLimitHeadersFilter.java:76) with arguments: [X-RateLimit-Limit, 20]
+
+	at app//org.springframework.http.HttpHeaders.add(HttpHeaders.java:1762)
+	at app//org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest.shouldHandleRedisError(RateLimitHeadersFilterTest.java:104)
+	at java.base@17.0.13/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base@17.0.13/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="shouldExtractClientIpFromXRealIp()" classname="org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest" time="0.009"/>
+  <testcase name="shouldAddRateLimitHeaders()" classname="org.example.APIGatewaySvc.filter.RateLimitHeadersFilterTest" time="0.003"/>
+  <system-out><![CDATA[21:56:09.985 [Test worker] WARN org.example.APIGatewaySvc.filter.RateLimitHeadersFilter -- Error processing rate limit headers: Cannot invoke "reactor.core.publisher.Mono.defaultIfEmpty(Object)" because the return value of "org.springframework.data.redis.core.ReactiveValueOperations.get(Object)" is null
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="org.example.APIGatewaySvc.service.GatewayLogServiceTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2025-08-13T13:37:05.476Z" hostname="SEOKYEEUN" time="0.236">
+<testsuite name="org.example.APIGatewaySvc.service.GatewayLogServiceTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2025-08-19T12:56:18.713Z" hostname="SEOKYEEUN" time="0.338">
   <properties/>
-  <testcase name="shouldSendLogEventToKafka()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.21"/>
-  <testcase name="shouldHandleAnonymousUser()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.004"/>
-  <testcase name="shouldLogRequestError()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.002"/>
-  <testcase name="shouldLogRequestStart()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.003"/>
-  <testcase name="shouldLogRequestEnd()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.002"/>
+  <testcase name="shouldSendLogEventToKafka()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.304"/>
+  <testcase name="shouldHandleAnonymousUser()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.005"/>
+  <testcase name="shouldLogRequestError()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.003"/>
+  <testcase name="shouldLogRequestStart()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.004"/>
+  <testcase name="shouldLogRequestEnd()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.001"/>
   <testcase name="shouldSkipMaskingWhenDisabled()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.002"/>
-  <testcase name="shouldMaskSensitiveInformation()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.01"/>
+  <testcase name="shouldMaskSensitiveInformation()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.012"/>
   <testcase name="shouldNotSendLogWhenLoggingDisabled()" classname="org.example.APIGatewaySvc.service.GatewayLogServiceTest" time="0.002"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - 보안 마스킹 유틸리티 테스트</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>보안 마스킹 유틸리티 테스트</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/org.example.APIGatewaySvc.util.html">org.example.APIGatewaySvc.util</a> &gt; SecurityMaskingUtilTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">12</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.028s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a href="#">Tests</a>
+</li>
+<li>
+<a href="#">Standard output</a>
+</li>
+</ul>
+<div class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Method name</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">Request ID 생성</td>
+<td class="success">testGenerateRequestId()</td>
+<td class="success">0.001s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">모든 민감 정보 종합 마스킹</td>
+<td class="success">testMaskAllSensitiveInfo()</td>
+<td class="success">0.002s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">API 키 마스킹</td>
+<td class="success">testMaskApiKeys()</td>
+<td class="success">0.010s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">Authorization 헤더 마스킹</td>
+<td class="success">testMaskAuthorizationHeader()</td>
+<td class="success">0.001s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">이메일 마스킹</td>
+<td class="success">testMaskEmail()</td>
+<td class="success">0.005s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">JWT 토큰 마스킹 - Bearer 접두사 포함</td>
+<td class="success">testMaskJwtTokenWithBearer()</td>
+<td class="success">0.002s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">JWT 토큰 마스킹 - Bearer 접두사 없음</td>
+<td class="success">testMaskJwtTokenWithoutBearer()</td>
+<td class="success">0.001s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">이메일이 아닌 @ 포함 문자열은 그대로 유지</td>
+<td class="success">testNonEmailStringsWithAtSymbolRemainUnchanged()</td>
+<td class="success">0.001s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">JWT 토큰이 아닌 문자열은 그대로 유지</td>
+<td class="success">testNonJwtStringsRemainUnchanged()</td>
+<td class="success">0s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">null 및 빈 문자열 처리</td>
+<td class="success">testNullAndEmptyStrings()</td>
+<td class="success">0.001s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">짧은 토큰 마스킹</td>
+<td class="success">testShortTokenMasking()</td>
+<td class="success">0.002s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">매우 긴 JWT 토큰 마스킹</td>
+<td class="success">testVeryLongJwtTokenMasking()</td>
+<td class="success">0.002s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>Original: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+Masked: Bearer eyJhbGciOi********V_adQssw5c
+Original: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+Masked: Bearer eyJh********J9.[PAYLOAD_MASKED].SflK********5c
+Short token masked: [MASKED].[PAYLOAD_MASKED].[MASKED]
+Long token length: 402
+Masked token length: 46
+Original: API_KEY=abc123def456ghi789 SECRET_KEY: xyz987uvw654rst321
+Masked: API_KEY=abc1********789 SECRET_KEY: xyz9********321
+Original: 사용자 이메일: john.doe@example.com, 관리자: admin@test.org
+Masked: 사용자 이메일: jo*****e@example.com, 관리자: ad**n@test.org
+Original:
+사용자 로그인: john.doe@example.com
+Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.signature
+API_KEY=secret123456
+응답 데이터를 반환합니다.
+
+Masked:
+사용자 로그인: jo*****e@example.com
+Authorization: Bearer eyJh********J9.[PAYLOAD_MASKED].sign***re
+API_KEY=secr*****456
+응답 데이터를 반환합니다.
+
+Generated Request ID: a2154d70-1c71-4c6e-9056-6704db7dc9ca
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="https://www.gradle.org">Gradle 8.14.3</a> at 2025. 8. 19. 오후 9:56:19</p>
+</div>
+</div>
+</body>
+</html>

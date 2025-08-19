@@ -21,7 +21,7 @@ import java.util.Map;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.example.APIGatewaySvc.service.KafkaProducerService;
+import org.example.APIGatewaySvc.service.GatewayLogService;
 
 /**
  * Auth0 OAuth2 로그인 처리를 위한 컨트롤러
@@ -41,12 +41,12 @@ public class AuthController {
     private String audience;
 
     private final ReactiveOAuth2AuthorizedClientService authorizedClientService;
-    private final KafkaProducerService kafkaProducerService;
+    private final GatewayLogService gatewayLogService;
 
     public AuthController(ReactiveOAuth2AuthorizedClientService authorizedClientService,
-                         KafkaProducerService kafkaProducerService) {
+                         @org.springframework.beans.factory.annotation.Autowired(required = false) GatewayLogService gatewayLogService) {
         this.authorizedClientService = authorizedClientService;
-        this.kafkaProducerService = kafkaProducerService;
+        this.gatewayLogService = gatewayLogService;
     }
 
     /**
@@ -129,7 +129,8 @@ public class AuthController {
                         logoutEvent.put("timestamp", java.time.Instant.now().toString());
                         logoutEvent.put("source", "auth0");
                         
-                        kafkaProducerService.sendAuthEvent(logoutEvent);
+                        // 로깅 서비스로 로그아웃 이벤트 전송 (필요시 구현)
+                        // gatewayLogService.logEvent(logoutEvent);
                     }
                 } catch (Exception e) {
                     // 로그 전송 실패 시 무시
@@ -218,7 +219,8 @@ public class AuthController {
             authEvent.put("timestamp", java.time.Instant.now().toString());
             authEvent.put("source", "auth0");
             
-            kafkaProducerService.sendAuthEvent(authEvent);
+            // 로깅 서비스로 인증 이벤트 전송 (필요시 구현)
+            // gatewayLogService.logEvent(authEvent);
         } catch (Exception e) {
             // 로그 전송 실패 시 무시 (메인 기능에 영향 없도록)
         }

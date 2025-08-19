@@ -42,10 +42,7 @@ dependencies {
     // Data & Messaging - Redis for rate limiting
     implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 
-    // Service discovery / load balancing (prod with lb:// URIs)
-    implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
-    // (Optional) Eureka client
-    // implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client' // Kafka 테스트를 위해 임시 비활성화
+    // 직접 URL 사용으로 로드밸런서 불필요
 
     // Spring Kafka
     implementation 'org.springframework.kafka:spring-kafka'

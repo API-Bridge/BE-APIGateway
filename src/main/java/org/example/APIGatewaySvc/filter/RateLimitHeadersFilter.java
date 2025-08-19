@@ -26,6 +26,11 @@ import java.util.Optional;
  * - X-RateLimit-Reset: Rate Limit 재설정 시간 (Unix timestamp)
  */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "redis.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class RateLimitHeadersFilter implements GlobalFilter, Ordered {
     // GlobalFilter 인터페이스를 구현하여 모든 요청에 대해 필터링 수행
     private static final Logger logger = LoggerFactory.getLogger(RateLimitHeadersFilter.class);

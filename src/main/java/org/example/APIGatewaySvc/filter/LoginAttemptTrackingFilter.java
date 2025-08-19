@@ -18,6 +18,11 @@ import reactor.core.publisher.Mono;
  * 인증 실패 시 LoginAttemptService를 통해 실패 횟수를 추적하고 필요시 차단 처리
  */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "redis.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class LoginAttemptTrackingFilter implements GlobalFilter, Ordered {
     
     private final LoginAttemptService loginAttemptService;

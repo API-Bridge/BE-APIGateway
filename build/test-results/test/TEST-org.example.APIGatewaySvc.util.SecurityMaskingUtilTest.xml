@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="보안 마스킹 유틸리티 테스트" tests="12" skipped="0" failures="0" errors="0" timestamp="2025-08-19T12:56:19.482Z" hostname="SEOKYEEUN" time="0.033">
+  <properties/>
+  <testcase name="Authorization 헤더 마스킹" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.001"/>
+  <testcase name="JWT 토큰 마스킹 - Bearer 접두사 포함" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.002"/>
+  <testcase name="null 및 빈 문자열 처리" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.001"/>
+  <testcase name="이메일이 아닌 @ 포함 문자열은 그대로 유지" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.001"/>
+  <testcase name="짧은 토큰 마스킹" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.002"/>
+  <testcase name="JWT 토큰 마스킹 - Bearer 접두사 없음" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.001"/>
+  <testcase name="매우 긴 JWT 토큰 마스킹" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.002"/>
+  <testcase name="API 키 마스킹" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.01"/>
+  <testcase name="이메일 마스킹" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.005"/>
+  <testcase name="모든 민감 정보 종합 마스킹" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.002"/>
+  <testcase name="Request ID 생성" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.001"/>
+  <testcase name="JWT 토큰이 아닌 문자열은 그대로 유지" classname="org.example.APIGatewaySvc.util.SecurityMaskingUtilTest" time="0.0"/>
+  <system-out><![CDATA[Original: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+Masked: Bearer eyJhbGciOi********V_adQssw5c
+Original: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+Masked: Bearer eyJh********J9.[PAYLOAD_MASKED].SflK********5c
+Short token masked: [MASKED].[PAYLOAD_MASKED].[MASKED]
+Long token length: 402
+Masked token length: 46
+Original: API_KEY=abc123def456ghi789 SECRET_KEY: xyz987uvw654rst321
+Masked: API_KEY=abc1********789 SECRET_KEY: xyz9********321
+Original: 사용자 이메일: john.doe@example.com, 관리자: admin@test.org
+Masked: 사용자 이메일: jo*****e@example.com, 관리자: ad**n@test.org
+Original:
+사용자 로그인: john.doe@example.com
+Authorization: Bearer eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.signature
+API_KEY=secret123456
+응답 데이터를 반환합니다.
+
+Masked:
+사용자 로그인: jo*****e@example.com
+Authorization: Bearer eyJh********J9.[PAYLOAD_MASKED].sign***re
+API_KEY=secr*****456
+응답 데이터를 반환합니다.
+
+Generated Request ID: a2154d70-1c71-4c6e-9056-6704db7dc9ca
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

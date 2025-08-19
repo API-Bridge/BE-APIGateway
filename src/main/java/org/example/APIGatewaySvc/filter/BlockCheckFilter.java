@@ -27,6 +27,11 @@ import java.util.UUID;
 // - 차단된 경우 403 Forbidden 응답 반환
 // - 차단되지 않은 경우 다음 필터로 요청 전달
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "redis.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class BlockCheckFilter implements GlobalFilter, Ordered {
 
     private final ReactiveRedisTemplate<String, String> redisTemplate;

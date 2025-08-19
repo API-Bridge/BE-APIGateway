@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" tests="11" skipped="11" failures="0" errors="0" timestamp="2025-08-19T12:56:16.269Z" hostname="SEOKYEEUN" time="0.001">
+  <properties/>
+  <testcase name="System Management Service 라우팅이 올바르게 동작해야 함" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="Rate Limiting이 올바르게 적용되어야 함" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="User Service 라우팅이 올바르게 동작해야 함" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="API Management Service 라우팅이 올바르게 동작해야 함" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="서로 다른 사용자는 독립적인 Rate Limit을 가져야 함" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="존재하지 않는 라우트는 404 에러를 반환해야 함" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="Custom API Management Service 라우팅이 올바르게 동작해야 함" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="Cookie 헤더가 제거되어야 함 (보안)" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="JWT 토큰 없이 보호된 경로 접근 시 401 에러 반환" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="AI Feature Service 라우팅이 올바르게 동작해야 함" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <testcase name="Gateway 타임스탬프 헤더가 모든 응답에 포함되어야 함" classname="org.example.APIGatewaySvc.gateway.GatewayRoutingIntegrationTest" time="0.0">
+    <skipped/>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

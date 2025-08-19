@@ -18,7 +18,10 @@ import org.springframework.context.annotation.Primary;
  */
 @Configuration
 @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
-        name = "spring.data.redis.repositories.enabled", havingValue = "true", matchIfMissing = true)
+    name = "redis.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class RateLimitConfig {
 
     @Value("${rate-limit.default.replenish-rate:10}")

@@ -12,6 +12,11 @@ import java.time.Instant;
  * Redis 기반 차단 기능의 비즈니스 로직을 처리
  */
 @Service
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+    name = "redis.enabled", 
+    havingValue = "true", 
+    matchIfMissing = false
+)
 public class BlockService {
     
     private final ReactiveRedisTemplate<String, String> redisTemplate;

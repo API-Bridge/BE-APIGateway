@@ -20,7 +20,8 @@
       "Bash(powershell:*)",
       "Bash(docker-compose:*)",
       "Bash(docker exec:*)",
-      "Bash(del:*)"
+      "Bash(del:*)",
+      "Bash(gradlew.bat compileJava:*)"
     ],
     "deny": []
   }
