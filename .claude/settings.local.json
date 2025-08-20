@@ -21,7 +21,9 @@
       "Bash(docker-compose:*)",
       "Bash(docker exec:*)",
       "Bash(del:*)",
-      "Bash(gradlew.bat compileJava:*)"
+      "Bash(gradlew.bat compileJava:*)",
+      "Bash(docker compose:*)",
+      "Bash(docker logs:*)"
     ],
     "deny": []
   }

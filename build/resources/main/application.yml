@@ -9,33 +9,33 @@ spring:
   main:
     allow-circular-references: true
 
-  # Kafka 설정 - 일시 비활성화
-  # kafka:
-  #   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-  #   producer:
-  #     client-id: ${spring.application.name}-logging-producer
-  #     acks: all
-  #     retries: 3
-  #     batch-size: 16384
-  #     linger-ms: 5
-  #     buffer-memory: 33554432
-  #     compression-type: snappy
-  #     enable-idempotence: true
-  #     key-serializer: org.apache.kafka.common.serialization.StringSerializer
-  #     value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-  #   consumer:
-  #     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-  #     group-id: gateway-consumer-group
-  #     auto-offset-reset: earliest
-  #     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-  #     value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-  #     properties:
-  #       spring.json.trusted.packages: "*"
-  #     enable-auto-commit: false
-  #   listener:
-  #     ack-mode: manual_immediate
-  #   template:
-  #     default-topic: logs.gateway
+  # Kafka 설정
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
+    producer:
+      client-id: ${spring.application.name}-logging-producer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 5
+      buffer-memory: 33554432
+      compression-type: snappy
+      enable-idempotence: true
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
+      group-id: gateway-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+      enable-auto-commit: false
+    listener:
+      ack-mode: manual_immediate
+    template:
+      default-topic: logs.gateway
 
   # Redis 설정
   data:
@@ -367,6 +367,10 @@ gateway:
     kafka:
       topic: ${GATEWAY_LOG_TOPIC:logs.gateway}
     mask-sensitive-data: ${GATEWAY_MASK_SENSITIVE_DATA:true}
+
+# Kafka 기능 활성화
+kafka:
+  enabled: ${KAFKA_ENABLED:true}
 
 # Rate Limiting 설정
 rate-limit:

@@ -1,0 +1,160 @@
+version: '3.8'
+
+services:
+  # Redis - Rate Limiting, 차단 시스템, 로그인 시도 추적용
+  redis:
+    image: redis:7-alpine
+    container_name: api-gateway-redis
+    ports:
+      - "6380:6379"  # 포트 +1 (기본 6379 → 6380)
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - api-gateway-network
+
+  # Zookeeper - Kafka 의존성
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: api-gateway-zookeeper
+    ports:
+      - "2182:2181"  # 포트 +1 (기본 2181 → 2182)
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 2
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_logs:/var/lib/zookeeper/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo 'ruok' | nc localhost 2181"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - api-gateway-network
+
+  # Kafka - 게이트웨이 로깅용
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: api-gateway-kafka
+    ports:
+      - "9093:9092"  # 포트 +1 (기본 9092 → 9093)
+      - "9101:9101"  # JMX 포트
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      # 성능 최적화
+      KAFKA_NUM_NETWORK_THREADS: 3
+      KAFKA_NUM_IO_THREADS: 8
+      KAFKA_SOCKET_SEND_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_REQUEST_MAX_BYTES: 104857600
+      # 로그 관리
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
+      KAFKA_LOG_RETENTION_CHECK_INTERVAL_MS: 300000
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+    networks:
+      - api-gateway-network
+
+  # Kafka UI - 관리 및 모니터링용 (선택사항)
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: api-gateway-kafka-ui
+    ports:
+      - "8081:8080"  # 포트 +1 (기본 8080 → 8081)
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-gateway
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - api-gateway-network
+
+  # API Gateway 애플리케이션 (주석 처리 - 로컬에서 실행)
+  # api-gateway:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: api-gateway-app
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - SPRING_PROFILES_ACTIVE=local
+  #     - SPRING_REDIS_HOST=redis
+  #     - SPRING_REDIS_PORT=6379
+  #     - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+  #     - GATEWAY_LOGGING_ENABLED=true
+  #     - GATEWAY_LOG_TOPIC=logs.gateway
+  #     - GATEWAY_MASK_SENSITIVE_DATA=true
+  #     # Auth0 설정 (.env 파일에서 로드)
+  #     - AUTH0_ISSUER_URI=${AUTH0_ISSUER_URI}
+  #     - AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
+  #     - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}
+  #     - AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET}
+  #     - AUTH0_LOGOUT_REDIRECT_URI=${AUTH0_LOGOUT_REDIRECT_URI}
+  #     # Redis/Kafka 활성화
+  #     - redis.enabled=true
+  #     - kafka.enabled=true
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #     kafka:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+  #     interval: 30s
+  #     timeout: 3s
+  #     retries: 3
+  #     start_period: 40s
+  #   networks:
+  #     - api-gateway-network
+
+volumes:
+  redis_data:
+    driver: local
+  zookeeper_data:
+    driver: local
+  zookeeper_logs:
+    driver: local
+  kafka_data:
+    driver: local
+
+networks:
+  api-gateway-network:
+    driver: bridge
+    name: api-gateway-network
