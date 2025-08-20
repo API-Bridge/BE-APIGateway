@@ -37,7 +37,6 @@ public class ErrorDetailsDTO {
     @JsonProperty("traceId")
     private String traceId;
     
-    public ErrorDetailsDTO() {}
     
     public ErrorDetailsDTO(String type, Map<String, Object> details, String traceId) {
         this.type = type;
@@ -70,7 +69,6 @@ public class ErrorDetailsDTO {
         @JsonProperty("rejectedValue")
         private Object rejectedValue;
         
-        public FieldError() {}
         
         public FieldError(String field, String code, String message, Object rejectedValue) {
             this.field = field;

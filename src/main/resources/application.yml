@@ -41,7 +41,7 @@ spring:
   data:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}
-      port: ${SPRING_REDIS_PORT:6379}
+      port: ${SPRING_REDIS_PORT:6380}
       timeout: 5000ms
       connect-timeout: 5000ms
       lettuce:
@@ -157,54 +157,56 @@ spring:
                 name: userSvcCb
                 fallback-uri: forward:/fallback/user-service
 
-        # 추후 포트 결정 후 활성화 예정
-        # - id: api-management-service-local
-        #   uri: http://localhost:8082
-        #   predicates:
-        #     - Path=/gateway/apimgmt/**
-        #   filters:
-        #     - StripPrefix=2
-        #     - name: RequestRateLimiter
-        #       args:
-        #         rate-limiter: "#{@managementServiceRateLimiter}"
-        #         key-resolver: "#{@userKeyResolver}"
-        #         deny-empty-key: false
-        #     - name: CircuitBreaker
-        #       args:
-        #         name: apiMgmtSvcCb
-        #         fallback-uri: forward:/fallback/api-management
+        # API 관리 서비스 라우트 (8082)
+        - id: api-management-service-local
+          uri: http://localhost:8082
+          predicates:
+            - Path=/gateway/apimgmt/**
+          filters:
+            - StripPrefix=2
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@managementServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: apiMgmtSvcCb
+                fallback-uri: forward:/fallback/api-management
 
-        # - id: custom-api-management-service-local
-        #   uri: http://localhost:8083
-        #   predicates:
-        #     - Path=/gateway/customapi/**
-        #   filters:
-        #     - StripPrefix=2
-        #     - name: RequestRateLimiter
-        #       args:
-        #         rate-limiter: "#{@managementServiceRateLimiter}"
-        #         key-resolver: "#{@userKeyResolver}"
-        #         deny-empty-key: false
-        #     - name: CircuitBreaker
-        #       args:
-        #         name: customApiMgmtSvcCb
-        #         fallback-uri: forward:/fallback/custom-api-management
+        # 커스텀 API 서비스 라우트 (8083)
+        - id: custom-api-management-service-local
+          uri: http://localhost:8083
+          predicates:
+            - Path=/gateway/customapi/**
+          filters:
+            - StripPrefix=2
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@managementServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: customApiMgmtSvcCb
+                fallback-uri: forward:/fallback/custom-api-management
 
-        # - id: ai-feature-service-local
-        #   uri: http://localhost:8084
-        #   predicates:
-        #     - Path=/gateway/aifeature/**
-        #   filters:
-        #     - StripPrefix=2
-        #     - name: RequestRateLimiter
-        #       args:
-        #         rate-limiter: "#{@aiServiceRateLimiter}"
-        #         key-resolver: "#{@userKeyResolver}"
-        #         deny-empty-key: false
-        #     - name: CircuitBreaker
-        #       args:
-        #         name: aiFeatureSvcCb
-        #         fallback-uri: forward:/fallback/ai-feature
+        # 모니터링 서비스 라우트 (8084)
+        - id: monitoring-service-local
+          uri: http://localhost:8084
+          predicates:
+            - Path=/gateway/monitoring/**
+          filters:
+            - StripPrefix=2
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@managementServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: monitoringSvcCb
+                fallback-uri: forward:/fallback/monitoring
 
         # AI 서비스 라우트 (POST /ai/generate/custom-api)
         - id: ai-service-generate-custom-api
@@ -213,11 +215,11 @@ spring:
             - Path=/ai/generate/custom-api
             - Method=POST
           filters:
-            - name: RequestRateLimiter
-              args:
-                rate-limiter: "#{@aiServiceRateLimiter}"
-                key-resolver: "#{@userKeyResolver}"
-                deny-empty-key: false
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@aiServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
             - name: CircuitBreaker
               args:
                 name: aiSvcCb
@@ -230,11 +232,32 @@ spring:
             - Path=/custom/**
             - Method=GET
           filters:
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@aiServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: aiSvcCb
+                fallback-uri: forward:/fallback/ai-service
+
+        # AI 서비스 일반 라우트 (모든 /gateway/ai/** 요청) - Rate Limiting 테스트용
+        - id: ai-service-general-local
+          uri: http://httpbin.org  # 테스트를 위해 httpbin 사용
+          predicates:
+            - Path=/gateway/ai/**
+          filters:
+            - StripPrefix=2
             - name: RequestRateLimiter
               args:
                 rate-limiter: "#{@aiServiceRateLimiter}"
                 key-resolver: "#{@userKeyResolver}"
                 deny-empty-key: false
+            - name: RewritePath
+              args:
+                regexp: /.*
+                replacement: /delay/1
             - name: CircuitBreaker
               args:
                 name: aiSvcCb
@@ -260,32 +283,152 @@ spring:
     port: ${SERVER_PORT:8080}
 
 # =================================================================
-#                 프로필별 설정 (프로덕션 환경) - 추후 필요시 활성화
+#                 프로필별 설정 (프로덕션 환경)
 # =================================================================
-# ---
-# spring:
-#   config:
-#     activate:
-#       on-profile: prod
-#
-#   cloud:
-#     gateway:
-#       routes:
-#         - id: user-service
-#           uri: http://production-server:8081
-#           predicates:
-#             - Path=/gateway/users/**
-#           filters:
-#             - StripPrefix=2
-#             - TokenRelay=
-#             - name: RequestRateLimiter
-#               args:
-#                 rate-limiter: "#{@userServiceRateLimiter}"
-#                 key-resolver: "#{@userKeyResolver}"
-#             - name: CircuitBreaker
-#               args:
-#                 name: userSvcCb
-#                 fallback-uri: forward:/fallback/user-service
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  cloud:
+    gateway:
+      default-filters:
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+            backoff:
+              first-backoff: 50ms
+              max-backoff: 500ms
+              factor: 2
+        - AddRequestHeader=X-Gateway, api-gateway
+        - RemoveRequestHeader=Cookie
+        - name: StandardResponseFilter
+        - name: TokenRelay
+      routes:
+        # 서비스별 라우팅 설정 (로컬 환경용)
+        - id: user-service-local
+          uri: http://localhost:8081
+          predicates:
+            - Path=/gateway/users/**
+          filters:
+            - StripPrefix=2
+            # Rate Limiting 일시 비활성화 (Redis 없이 실행하기 위함)
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@userServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+
+        # API 관리 서비스 라우트 (8082)
+        - id: api-management-service-local
+          uri: http://localhost:8082
+          predicates:
+            - Path=/gateway/apimgmt/**
+          filters:
+            - StripPrefix=2
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@managementServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: apiMgmtSvcCb
+                fallback-uri: forward:/fallback/api-management
+
+        # 커스텀 API 서비스 라우트 (8083)
+        - id: custom-api-management-service-local
+          uri: http://localhost:8083
+          predicates:
+            - Path=/gateway/customapi/**
+          filters:
+            - StripPrefix=2
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@managementServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: customApiMgmtSvcCb
+                fallback-uri: forward:/fallback/custom-api-management
+
+        # 모니터링 서비스 라우트 (8084)
+        - id: monitoring-service-local
+          uri: http://localhost:8084
+          predicates:
+            - Path=/gateway/monitoring/**
+          filters:
+            - StripPrefix=2
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@managementServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: monitoringSvcCb
+                fallback-uri: forward:/fallback/monitoring
+
+        # AI 서비스 라우트 (POST /ai/generate/custom-api)
+        - id: ai-service-generate-custom-api
+          uri: http://localhost:8085
+          predicates:
+            - Path=/ai/generate/custom-api
+            - Method=POST
+          filters:
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@aiServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: aiSvcCb
+                fallback-uri: forward:/fallback/ai-service
+
+        # 커스텀 API 사용 라우트 (GET /custom/apiName={커스텀API이름})
+        - id: ai-service-custom-api-usage
+          uri: http://localhost:8085
+          predicates:
+            - Path=/custom/**
+            - Method=GET
+          filters:
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@aiServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: aiSvcCb
+                fallback-uri: forward:/fallback/ai-service
+
+        # AI 서비스 일반 라우트 (모든 /gateway/ai/** 요청)
+        - id: ai-service-general-prod
+          uri: http://localhost:8085
+          predicates:
+            - Path=/gateway/ai/**
+          filters:
+            - StripPrefix=2
+            # - name: RequestRateLimiter
+            #   args:
+            #     rate-limiter: "#{@aiServiceRateLimiter}"
+            #     key-resolver: "#{@userKeyResolver}"
+            #     deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: aiSvcCb
+                fallback-uri: forward:/fallback/ai-service
+
+  server:
+    port: ${SERVER_PORT:8080}
 
 # =================================================================
 #                 액추에이터 및 기타 설정 (공통)
@@ -357,14 +500,14 @@ resilience4j:
       customApiMgmtSvcCb:
         baseConfig: default
         registerHealthIndicator: true
-      aiFeatureSvcCb:
+      monitoringSvcCb:
+        baseConfig: default
+        registerHealthIndicator: true
+      aiSvcCb:
         baseConfig: default
         registerHealthIndicator: true
         slowCallDurationThreshold: 5s
         slowCallRateThreshold: 30
-      systemMgmtSvcCb:
-        baseConfig: default
-        registerHealthIndicator: true
   metrics:
     enabled: true
     legacy:
@@ -405,6 +548,10 @@ gateway:
 # Kafka 기능 활성화
 kafka:
   enabled: ${KAFKA_ENABLED:true}
+
+# Redis 기능 활성화 - Rate Limiting 조건부 실행을 위함
+redis:
+  enabled: ${REDIS_ENABLED:true}
 
 # Rate Limiting 설정
 rate-limit:

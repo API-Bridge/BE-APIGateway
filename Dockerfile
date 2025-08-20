@@ -1,55 +1,58 @@
-# Multi-stage build for Amazon Corretto 17
+
+# Multi-stage build for optimized production image
 FROM amazoncorretto:17-alpine AS builder
 
+# Set working directory
 WORKDIR /app
 
 # Copy gradle wrapper and build files
-COPY gradlew .
-COPY gradle gradle
-COPY build.gradle settings.gradle ./
+COPY gradle/ gradle/
+COPY gradlew build.gradle settings.gradle ./
 
 # Make gradlew executable
 RUN chmod +x ./gradlew
 
-# Download dependencies
-RUN ./gradlew dependencies --no-daemon
+# Copy source code
+COPY src/ src/
 
-# Copy source code and build
-COPY src src
-RUN ./gradlew bootJar --no-daemon -x test
+# Build the application (skip tests for faster build)
+RUN ./gradlew clean bootJar -x test
 
-# Runtime stage
+# Production stage
 FROM amazoncorretto:17-alpine
 
-RUN addgroup -g 1001 -S spring && \
-    adduser -S spring -u 1001 -G spring
+# Install security updates and utilities
+RUN apk update && apk upgrade && \
+    apk add --no-cache dumb-init curl && \
+    rm -rf /var/cache/apk/*
 
+# Create non-root user for security
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
+
+# Set working directory
 WORKDIR /app
 
-# Install required packages
-RUN apk add --no-cache curl
-
-# Copy built application
+# Copy the built JAR from builder stage
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# Change ownership to spring user
-RUN chown spring:spring app.jar
+# Create logs directory with proper permissions
+RUN mkdir -p /app/logs && \
+    chown -R appuser:appgroup /app
 
-USER spring:spring
+# Switch to non-root user
+USER appuser
 
-# Health check for container orchestration (K8s, Docker Swarm)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
 
+# Expose port
 EXPOSE 8080
 
-# JVM tuning for container environment
-ENV JAVA_OPTS="-XX:+UseContainerSupport \
-               -XX:MaxRAMPercentage=75.0 \
-               -XX:+UseG1GC \
-               -XX:G1HeapRegionSize=16m \
-               -XX:+UseStringDeduplication \
-               -XX:+OptimizeStringConcat \
-               -Djava.security.egd=file:/dev/./urandom"
+# Set JVM options for container environment
+ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -XX:+UseG1GC -XX:G1HeapRegionSize=4m -XX:+ExitOnOutOfMemoryError"
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

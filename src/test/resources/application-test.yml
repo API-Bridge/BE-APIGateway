@@ -62,11 +62,12 @@ spring:
           # 테스트용 Mock JWKS URI
           issuer-uri: ${auth0.issuerUri}
 
-  # 테스트용 Redis 설정 (Embedded 또는 TestContainers 사용)
-  redis:
-    host: localhost
-    port: 6380  # 테스트 전용 포트
-    timeout: 1000ms
+  # 테스트용 Redis 설정 비활성화
+  data:
+    redis:
+      host: localhost
+      port: 6380  # 테스트 전용 포트
+      timeout: 1000ms
 
 # Auth0 테스트 설정
 auth0:
@@ -77,6 +78,12 @@ auth0:
 # JWT 테스트 모드 활성화
 jwt:
   test-mode: true
+
+# Redis와 Kafka 비활성화 (테스트용)
+redis:
+  enabled: false
+kafka:
+  enabled: false
 
 # Rate Limiting 테스트 설정
 rate-limit:

@@ -1,8 +1,11 @@
 package org.example.APIGatewaySvc.util;
 
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -22,6 +25,8 @@ import java.util.Map;
  */
 @Component
 public class JwtTestUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtTestUtil.class);
 
     private static final String TEST_SECRET = "test-secret-key-for-local-development-only-do-not-use-in-production";
     private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(TEST_SECRET.getBytes(StandardCharsets.UTF_8));
@@ -123,16 +128,16 @@ public class JwtTestUtil {
                     .parseSignedClaims(token)
                     .getPayload();
 
-            System.out.println("=== JWT Token Info ===");
-            System.out.println("Subject: " + claims.getSubject());
-            System.out.println("Issuer: " + claims.getIssuer());
-            System.out.println("Audience: " + claims.getAudience());
-            System.out.println("Issued At: " + claims.getIssuedAt());
-            System.out.println("Expires At: " + claims.getExpiration());
-            System.out.println("Permissions: " + claims.get("permissions"));
-            System.out.println("====================");
-        } catch (Exception e) {
-            System.out.println("토큰 파싱 실패: " + e.getMessage());
+            logger.info("=== JWT Token Info ===");
+            logger.info("Subject: {}", claims.getSubject());
+            logger.info("Issuer: {}", claims.getIssuer());
+            logger.info("Audience: {}", claims.getAudience());
+            logger.info("Issued At: {}", claims.getIssuedAt());
+            logger.info("Expires At: {}", claims.getExpiration());
+            logger.info("Permissions: {}", claims.get("permissions"));
+            logger.info("====================");
+        } catch (JwtException e) {
+            logger.error("토큰 파싱 실패: {}", e.getMessage());
         }
     }
 

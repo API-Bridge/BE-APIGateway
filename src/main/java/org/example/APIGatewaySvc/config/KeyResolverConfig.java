@@ -1,5 +1,7 @@
 package org.example.APIGatewaySvc.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +23,8 @@ import reactor.core.publisher.Mono;
  */
 @Configuration
 public class KeyResolverConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(KeyResolverConfig.class);
 
     /**
      * 사용자 ID 기반 Key Resolver
@@ -46,11 +50,11 @@ public class KeyResolverConfig {
                             Mono.fromCallable(() -> {
                                 String clientIP = getClientIP(exchange);
                                 String key = "ip:" + clientIP;
-                                System.out.println("Rate Limit Key: " + key); // 디버깅용 로그
+                                logger.debug("Rate Limit Key: " + key);
                                 return key;
                             })
                     )
-                    .doOnNext(key -> System.out.println("Final Rate Limit Key: " + key)); // 디버깅용 로그
+                    .doOnNext(key -> logger.debug("Final Rate Limit Key: " + key));
         };
     }
 

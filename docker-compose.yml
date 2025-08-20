@@ -6,7 +6,7 @@ services:
     image: redis:7-alpine
     container_name: api-gateway-redis
     ports:
-      - "6380:6379"  # 포트 +1 (기본 6379 → 6380)
+      - "6380:6379"  # 포트 매핑 사용
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
@@ -23,10 +23,9 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: api-gateway-zookeeper
-    ports:
-      - "2182:2181"  # 포트 +1 (기본 2181 → 2182)
+    network_mode: "host"  # 호스트 네트워크 사용
     environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_CLIENT_PORT: 2182
       ZOOKEEPER_TICK_TIME: 2000
       ZOOKEEPER_SYNC_LIMIT: 2
     volumes:
@@ -34,26 +33,22 @@ services:
       - zookeeper_logs:/var/lib/zookeeper/log
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "bash", "-c", "echo 'ruok' | nc localhost 2181"]
+      test: ["CMD", "bash", "-c", "echo 'ruok' | nc localhost 2182"]
       interval: 10s
       timeout: 3s
       retries: 3
-    networks:
-      - api-gateway-network
 
   # Kafka - 게이트웨이 로깅용
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     container_name: api-gateway-kafka
-    ports:
-      - "9093:9092"  # 포트 +1 (기본 9092 → 9093)
-      - "9101:9101"  # JMX 포트
+    network_mode: "host"  # 호스트 네트워크 사용으로 localhost 접근 가능
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_ZOOKEEPER_CONNECT: localhost:2182
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
@@ -78,29 +73,25 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9093"]
       interval: 10s
       timeout: 10s
       retries: 3
-    networks:
-      - api-gateway-network
 
   # Kafka UI - 관리 및 모니터링용 (선택사항)
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: api-gateway-kafka-ui
-    ports:
-      - "8081:8080"  # 포트 +1 (기본 8080 → 8081)
+    network_mode: "host"  # 호스트 네트워크 사용
     environment:
       KAFKA_CLUSTERS_0_NAME: local-gateway
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: localhost:9093
+      KAFKA_CLUSTERS_0_ZOOKEEPER: localhost:2182
+      SERVER_PORT: 8082  # Kafka UI 포트 설정
     depends_on:
       kafka:
         condition: service_healthy
     restart: unless-stopped
-    networks:
-      - api-gateway-network
 
   # API Gateway 애플리케이션 (주석 처리 - 로컬에서 실행)
   # api-gateway:

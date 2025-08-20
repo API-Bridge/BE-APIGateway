@@ -1,0 +1,179 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "api-gateway.configMapName" . }}
+  labels:
+    {{- include "api-gateway.labels" . | nindent 4 }}
+data:
+  application-k8s.yml: |
+    server:
+      port: {{ .Values.config.server.port }}
+    
+    spring:
+      profiles:
+        active: {{ .Values.config.spring.profiles.active }}
+      
+      {{- if .Values.redis.enabled }}
+      data:
+        redis:
+          host: {{ .Values.config.spring.redis.host }}
+          port: {{ .Values.config.spring.redis.port }}
+          timeout: {{ .Values.config.spring.redis.timeout }}
+      {{- end }}
+      
+      {{- if .Values.kafka.enabled }}
+      kafka:
+        bootstrap-servers: {{ .Values.config.spring.kafka.bootstrap-servers }}
+        producer:
+          client-id: {{ .Values.config.spring.kafka.producer.client-id }}
+          acks: {{ .Values.config.spring.kafka.producer.acks }}
+          retries: {{ .Values.config.spring.kafka.producer.retries }}
+      {{- end }}
+      
+      security:
+        oauth2:
+          resourceserver:
+            jwt:
+              issuer-uri: {{ .Values.config.spring.security.oauth2.resourceserver.jwt.issuer-uri }}
+              audience: {{ .Values.config.spring.security.oauth2.resourceserver.jwt.audience }}
+      
+      cloud:
+        gateway:
+          routes:
+            # User Service Route
+            - id: user-service-k8s
+              uri: {{ .Values.gateway.routes.userService.uri }}
+              predicates:
+                - Path={{ .Values.gateway.routes.userService.path }}
+              filters:
+                - StripPrefix=2
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@userServiceRateLimiter}"
+                    key-resolver: "#{@userKeyResolver}"
+                    deny-empty-key: false
+                - name: CircuitBreaker
+                  args:
+                    name: userSvcCb
+                    fallback-uri: forward:/fallback/user-service
+            
+            # API Management Service Route
+            - id: api-management-service-k8s
+              uri: {{ .Values.gateway.routes.apiManagement.uri }}
+              predicates:
+                - Path={{ .Values.gateway.routes.apiManagement.path }}
+              filters:
+                - StripPrefix=2
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@managementServiceRateLimiter}"
+                    key-resolver: "#{@userKeyResolver}"
+                    deny-empty-key: false
+                - name: CircuitBreaker
+                  args:
+                    name: apiMgmtSvcCb
+                    fallback-uri: forward:/fallback/api-management
+            
+            # Custom API Service Route
+            - id: custom-api-service-k8s
+              uri: {{ .Values.gateway.routes.customApi.uri }}
+              predicates:
+                - Path={{ .Values.gateway.routes.customApi.path }}
+              filters:
+                - StripPrefix=2
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@managementServiceRateLimiter}"
+                    key-resolver: "#{@userKeyResolver}"
+                    deny-empty-key: false
+                - name: CircuitBreaker
+                  args:
+                    name: customApiMgmtSvcCb
+                    fallback-uri: forward:/fallback/custom-api-management
+            
+            # Monitoring Service Route
+            - id: monitoring-service-k8s
+              uri: {{ .Values.gateway.routes.monitoring.uri }}
+              predicates:
+                - Path={{ .Values.gateway.routes.monitoring.path }}
+              filters:
+                - StripPrefix=2
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@managementServiceRateLimiter}"
+                    key-resolver: "#{@userKeyResolver}"
+                    deny-empty-key: false
+                - name: CircuitBreaker
+                  args:
+                    name: monitoringSvcCb
+                    fallback-uri: forward:/fallback/monitoring
+            
+            # AI Service Routes
+            - id: ai-service-generate-k8s
+              uri: {{ .Values.gateway.routes.aiService.uri }}
+              predicates:
+                - Path={{ (index .Values.gateway.routes.aiService.paths 0) }}
+                - Method=POST
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@aiServiceRateLimiter}"
+                    key-resolver: "#{@userKeyResolver}"
+                    deny-empty-key: false
+                - name: CircuitBreaker
+                  args:
+                    name: aiSvcCb
+                    fallback-uri: forward:/fallback/ai-service
+            
+            - id: ai-service-custom-k8s
+              uri: {{ .Values.gateway.routes.aiService.uri }}
+              predicates:
+                - Path={{ (index .Values.gateway.routes.aiService.paths 1) }}
+                - Method=GET
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    rate-limiter: "#{@aiServiceRateLimiter}"
+                    key-resolver: "#{@userKeyResolver}"
+                    deny-empty-key: false
+                - name: CircuitBreaker
+                  args:
+                    name: aiSvcCb
+                    fallback-uri: forward:/fallback/ai-service
+    
+    # Management endpoints
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,prometheus,metrics,gateway,circuitbreakers
+          base-path: /actuator
+      endpoint:
+        health:
+          probes:
+            enabled: true
+          show-details: when_authorized
+    
+    # Gateway configuration
+    gateway:
+      logging:
+        enabled: ${GATEWAY_LOGGING_ENABLED:true}
+        kafka:
+          topic: logs.gateway
+    
+    # Rate limiting configuration  
+    rate-limit:
+      default:
+        replenish-rate: 10
+        burst-capacity: 20
+        requested-tokens: 1
+      user-service:
+        replenish-rate: 20
+        burst-capacity: 40
+      ai-service:
+        replenish-rate: 5
+        burst-capacity: 10
+        requested-tokens: 2
+      management:
+        replenish-rate: 15
+        burst-capacity: 30

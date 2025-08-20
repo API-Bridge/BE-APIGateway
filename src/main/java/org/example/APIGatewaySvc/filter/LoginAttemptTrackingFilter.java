@@ -1,6 +1,8 @@
 package org.example.APIGatewaySvc.filter;
 
 import org.example.APIGatewaySvc.service.LoginAttemptService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -24,6 +26,8 @@ import reactor.core.publisher.Mono;
     matchIfMissing = false
 )
 public class LoginAttemptTrackingFilter implements GlobalFilter, Ordered {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoginAttemptTrackingFilter.class);
     
     private final LoginAttemptService loginAttemptService;
     
@@ -168,9 +172,8 @@ public class LoginAttemptTrackingFilter implements GlobalFilter, Ordered {
     }
     
     private void logBlockEvent(String type, String identifier, String reason) {
-        System.out.println(String.format("[BLOCK EVENT] Type: %s, ID: %s, Reason: %s, Time: %s", 
-            type, identifier, reason, java.time.Instant.now()));
-        // 실제 구현에서는 적절한 로깅 프레임워크 사용 권장
+        logger.warn("[BLOCK EVENT] Type: {}, ID: {}, Reason: {}, Time: {}", 
+            type, identifier, reason, java.time.Instant.now());
     }
     
     @Override

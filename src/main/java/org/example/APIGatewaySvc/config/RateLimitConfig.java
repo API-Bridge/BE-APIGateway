@@ -1,5 +1,7 @@
 package org.example.APIGatewaySvc.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +25,8 @@ import org.springframework.context.annotation.Primary;
     matchIfMissing = false
 )
 public class RateLimitConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(RateLimitConfig.class);
 
     @Value("${rate-limit.default.replenish-rate:10}")
     private int defaultReplenishRate;
@@ -50,10 +54,10 @@ public class RateLimitConfig {
         );
         
         // 디버깅을 위한 로깅
-        System.out.println("DefaultRedisRateLimiter created: replenishRate=5, burstCapacity=10, requestedTokens=1");
+        logger.debug("DefaultRedisRateLimiter created: replenishRate=5, burstCapacity=10, requestedTokens=1");
         
         // Rate Limiter 디버깅을 위한 로그
-        System.out.println("Rate Limiter configured for debugging");
+        logger.info("Rate Limiter configured for debugging");
         
         return rateLimiter;
     }

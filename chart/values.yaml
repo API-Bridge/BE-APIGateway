@@ -1,0 +1,182 @@
+# Default values for api-gateway
+replicaCount: 2
+
+image:
+  repository: api-gateway
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: api-gateway.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - api-gateway
+        topologyKey: kubernetes.io/hostname
+
+# Application configuration
+config:
+  server:
+    port: 8080
+  spring:
+    profiles:
+      active: prod
+    redis:
+      host: redis-service
+      port: 6379
+      timeout: 5000ms
+    kafka:
+      bootstrap-servers: kafka-service:9092
+      producer:
+        client-id: api-gateway-producer
+        acks: all
+        retries: 3
+    security:
+      oauth2:
+        resourceserver:
+          jwt:
+            issuer-uri: https://api-bridge.us.auth0.com/
+            audience: http://api-gateway:8080/
+
+# External dependencies
+redis:
+  enabled: true
+  host: redis-service
+  port: 6379
+
+kafka:
+  enabled: true
+  bootstrapServers: kafka-service:9092
+
+# Service mesh / routing configuration
+gateway:
+  routes:
+    userService:
+      uri: http://user-service:8081
+      path: /gateway/users/**
+    apiManagement:
+      uri: http://api-management-service:8082
+      path: /gateway/apimgmt/**
+    customApi:
+      uri: http://custom-api-service:8083
+      path: /gateway/customapi/**
+    monitoring:
+      uri: http://monitoring-service:8084
+      path: /gateway/monitoring/**
+    aiService:
+      uri: http://ai-service:8085
+      paths:
+        - /ai/generate/custom-api
+        - /custom/**
+
+# Health checks and monitoring
+healthcheck:
+  enabled: true
+  livenessProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /actuator/health/readiness
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# Monitoring and observability
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+    namespace: monitoring
+    interval: 30s
+    scrapeTimeout: 10s
+
+# Environment variables
+env:
+  - name: SPRING_PROFILES_ACTIVE
+    value: "prod"
+  - name: SERVER_PORT
+    value: "8080"
+  - name: KAFKA_ENABLED
+    value: "true"
+  - name: GATEWAY_LOGGING_ENABLED
+    value: "true"
+
+# Secrets (to be provided via external secret management)
+secrets:
+  auth0:
+    clientId: ""
+    clientSecret: ""
+    issuerUri: ""
+    audience: ""
