@@ -11,7 +11,7 @@ spring:
 
   # Kafka 설정
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
     producer:
       client-id: ${spring.application.name}-logging-producer
       acks: all
@@ -24,7 +24,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
-      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
       group-id: gateway-consumer-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -117,21 +117,23 @@ spring:
         #     key-resolver: "#{@userKeyResolver}"
         #     deny-empty-key: false
       routes:
-        # Rate Limiting 테스트 전용 라우트 - 일시 비활성화
-        # - id: ratelimit-test-route
-        #   uri: http://httpbin.org
-        #   predicates:
-        #     - Path=/gateway/ratelimit/**
-        #   filters:
-        #     - name: RequestRateLimiter
-        #       args:
-        #         rate-limiter: "#{@defaultRedisRateLimiter}"
-        #         key-resolver: "#{@userKeyResolver}"
-        #         deny-empty-key: false
-        #     - name: RewritePath
-        #       args:
-        #         regexp: /gateway/ratelimit/(?<segment>.*)
-        #         replacement: /status/200
+        # Rate Limiting 테스트 전용 라우트
+        - id: ratelimit-test-route
+          uri: http://httpbin.org
+          predicates:
+            - Path=/gateway/ratelimit/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenish-rate: 1
+                redis-rate-limiter.burst-capacity: 3
+                redis-rate-limiter.requested-tokens: 1
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: RewritePath
+              args:
+                regexp: /gateway/ratelimit/(?<segment>.*)
+                replacement: /status/200
         
         # Mock 서비스 라우트들 - 일시 비활성화 (Redis 없이 실행하기 위함)
         # - id: mock-user-service
@@ -556,9 +558,9 @@ redis:
 # Rate Limiting 설정
 rate-limit:
   default:
-    replenish-rate: ${RATE_LIMIT_REPLENISH_RATE:10}
-    burst-capacity: ${RATE_LIMIT_BURST_CAPACITY:20}
-    requested-tokens: ${RATE_LIMIT_REQUESTED_TOKENS:1}
+    replenish-rate: 1
+    burst-capacity: 3
+    requested-tokens: 1
   user-service:
     replenish-rate: 20
     burst-capacity: 40

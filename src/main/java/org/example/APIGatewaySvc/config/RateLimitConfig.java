@@ -28,10 +28,10 @@ public class RateLimitConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(RateLimitConfig.class);
 
-    @Value("${rate-limit.default.replenish-rate:10}")
+    @Value("${rate-limit.default.replenish-rate:1}")
     private int defaultReplenishRate;
 
-    @Value("${rate-limit.default.burst-capacity:20}")
+    @Value("${rate-limit.default.burst-capacity:3}")
     private int defaultBurstCapacity;
 
     @Value("${rate-limit.default.requested-tokens:1}")
@@ -46,18 +46,16 @@ public class RateLimitConfig {
     @Bean("defaultRedisRateLimiter")
     @Primary
     public RedisRateLimiter defaultRedisRateLimiter() {
-        // 테스트를 위해 더 낮은 값으로 설정
+        // application.yml 설정값 사용
         RedisRateLimiter rateLimiter = new RedisRateLimiter(
-                5,    // 초당 5개 토큰 보충 (테스트용으로 낮게 설정)
-                10,   // 버스트 10개 허용 (테스트용으로 낮게 설정)
-                1     // 요청당 1토큰 소비
+                defaultReplenishRate,    // application.yml에서 읽어온 값
+                defaultBurstCapacity,    // application.yml에서 읽어온 값
+                defaultRequestedTokens   // application.yml에서 읽어온 값
         );
         
         // 디버깅을 위한 로깅
-        logger.debug("DefaultRedisRateLimiter created: replenishRate=5, burstCapacity=10, requestedTokens=1");
-        
-        // Rate Limiter 디버깅을 위한 로그
-        logger.info("Rate Limiter configured for debugging");
+        logger.info("DefaultRedisRateLimiter created: replenishRate={}, burstCapacity={}, requestedTokens={}", 
+                   defaultReplenishRate, defaultBurstCapacity, defaultRequestedTokens);
         
         return rateLimiter;
     }
