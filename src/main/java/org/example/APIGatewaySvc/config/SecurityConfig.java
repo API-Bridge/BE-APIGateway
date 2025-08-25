@@ -122,6 +122,12 @@ public class SecurityConfig {
                                 .pathMatchers("/error").permitAll()
                                 .pathMatchers("/").permitAll()
 
+                                // --- 관리자 전용 경로들 (AdminRoleFilter가 적용된 경로들) ---
+                                .pathMatchers("/gateway/users/admin/**").authenticated()
+                                .pathMatchers("/gateway/apimgmt/admin/**").authenticated()
+                                .pathMatchers("/gateway/customapi/admin/**").authenticated()
+                                .pathMatchers("/gateway/monitoring/**").authenticated()  // 모니터링은 전체가 관리자 전용
+                                
                                 // --- 관리자용 actuator 경로 ---
                                 .pathMatchers("/actuator/**").permitAll()  // 개발환경에서는 모든 actuator 허용
 
