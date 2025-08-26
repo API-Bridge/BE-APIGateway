@@ -32,7 +32,7 @@ class LoginAttemptServiceTest {
     @BeforeEach
     void setUp() {
         loginAttemptService = new LoginAttemptService(redisTemplate, blockService);
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test

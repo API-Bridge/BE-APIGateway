@@ -248,8 +248,8 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
             return "Mock API Management";
         } else if (path.startsWith("/public")) {
             return "Public API";
-        } else if (path.startsWith("/internal")) {
-            return "Internal API";
+        } else if (path.startsWith("/admin")) {
+            return "Admin API";
         }
         
         return null;

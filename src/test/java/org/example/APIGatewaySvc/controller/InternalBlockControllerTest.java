@@ -34,7 +34,7 @@ class InternalBlockControllerTest {
     @BeforeEach
     void setUp() {
         controller = new InternalBlockController(redisTemplate);
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test

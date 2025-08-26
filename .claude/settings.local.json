@@ -23,8 +23,25 @@
       "Bash(del:*)",
       "Bash(gradlew.bat compileJava:*)",
       "Bash(docker compose:*)",
-      "Bash(docker logs:*)"
+      "Bash(docker logs:*)",
+      "Bash(telnet:*)",
+      "Read(/C:\\workspace/**)",
+      "Read(/C:\\workspace/**)",
+      "Read(/C:\\workspace\\BE-UserService\\src\\main\\java\\org\\example\\Usersvc\\domain/**)",
+      "Read(/C:\\workspace\\BE-UserService\\src\\main\\java\\org\\example\\Usersvc\\service/**)",
+      "Read(/C:\\workspace\\BE-UserService\\src\\main\\java\\org\\example\\Usersvc\\common\\logging/**)",
+      "Read(/C:\\workspace\\BE-UserService\\src\\main\\java\\org\\example\\Usersvc\\common\\logging/**)",
+      "Bash(SERVER_PORT=8092 ./gradlew bootRun)",
+      "Read(/C:\\workspace\\BE-UserService\\src\\main\\resources/**)",
+      "Read(/C:\\workspace\\BE-UserService\\src\\main\\resources/**)",
+      "Bash(SPRING_REDIS_PORT=6381 ./gradlew bootRun)",
+      "Bash(SPRING_REDIS_PORT=6381 ./gradlew compileJava)",
+      "Bash(git rm:*)",
+      "Bash(.\\gradlew.bat compileJava:*)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "C:\\c\\workspace"
+    ]
   }
 }

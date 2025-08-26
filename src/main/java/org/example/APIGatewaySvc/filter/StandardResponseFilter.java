@@ -91,11 +91,14 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
 
                             // 응답 본문을 문자열로 변환
                             DataBuffer joinedBuffer = bufferFactory.join(dataBuffers);
-                            byte[] content = new byte[joinedBuffer.readableByteCount()];
-                            joinedBuffer.read(content);
-                            DataBufferUtils.release(joinedBuffer);
+                            String originalBody = "";
                             
-                            String originalBody = new String(content, StandardCharsets.UTF_8);
+                            if (joinedBuffer.readableByteCount() > 0) {
+                                byte[] content = new byte[joinedBuffer.readableByteCount()];
+                                joinedBuffer.read(content);
+                                originalBody = new String(content, StandardCharsets.UTF_8);
+                            }
+                            DataBufferUtils.release(joinedBuffer);
                             
                             // 응답 처리 시간 계산
                             Duration processingTime = Duration.between(startTime, Instant.now());

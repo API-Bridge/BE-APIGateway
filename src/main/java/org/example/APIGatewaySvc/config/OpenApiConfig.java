@@ -38,8 +38,17 @@ public class OpenApiConfig {
         return new OpenAPI()
             .info(new Info()
                 .title("API Gateway")
-                .version("1.0.0")
-                .description("마이크로서비스 아키텍처를 위한 통합 API Gateway입니다. JWT 인증, 라우팅, Rate Limiting, Circuit Breaker 기능을 제공합니다.")
+                .version("2.0.0")
+                .description("""
+                    마이크로서비스 아키텍처를 위한 통합 API Gateway입니다.
+                    
+                    주요 기능:
+                    • JWT 인증 및 권한 관리 (Auth0 연동)
+                    • 동적 라우팅 및 로드 밸런싱
+                    • Rate Limiting 및 Circuit Breaker
+                    • 실시간 보안 이벤트 추적 (Kafka 연동)
+                    • 통합 로깅 및 메트릭 수집
+                    """)
                 .contact(new Contact()
                     .name("API Bridge Team")
                     .email("support@api-bridge.com")

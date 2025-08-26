@@ -31,8 +31,8 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
-    name = "redis.enabled", 
-    havingValue = "true", 
+    name = "redis.enabled",
+    havingValue = "true",
     matchIfMissing = false
 )
 public class RedisConfig {

@@ -1,0 +1,348 @@
+# =================================================================
+#                 API Gateway 공통 설정
+# =================================================================
+spring:
+  application:
+    name: api-gateway
+  profiles:
+    active: dev
+  main:
+    allow-circular-references: true
+    # WebFlux 환경에서 Actuator 활성화
+    web-application-type: reactive
+
+  # Kafka 설정 - User Service와 공유
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      client-id: api-gateway-producer
+      acks: all
+      retries: 3
+      batch-size: 16384
+      linger-ms: 5
+      buffer-memory: 33554432
+      compression-type: snappy
+      enable-idempotence: true
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      client-id: api-gateway-consumer
+      group-id: api-gateway-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+      enable-auto-commit: false
+    listener:
+      ack-mode: manual_immediate
+    template:
+      default-topic: user-events
+
+  # Redis 설정 - User Service와 공유
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6381}
+      timeout: 5000ms
+      connect-timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: 3000ms
+        shutdown-timeout: 100ms
+
+  # OAuth2 / JWT 설정
+  security:
+    oauth2:
+      client:
+        registration:
+          auth0:
+            client-id: ${AUTH0_CLIENT_ID:}
+            client-secret: ${AUTH0_CLIENT_SECRET:}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          auth0:
+            issuer-uri: https://api-bridge.us.auth0.com/
+            authorization-uri: https://api-bridge.us.auth0.com/authorize
+            token-uri: https://api-bridge.us.auth0.com/oauth/token
+            user-info-uri: https://api-bridge.us.auth0.com/userinfo
+            jwk-set-uri: https://api-bridge.us.auth0.com/.well-known/jwks.json
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}
+          audience: ${AUTH0_AUDIENCE:http://localhost:8080/}
+
+  # Cloud Gateway 설정
+  cloud:
+    gateway:
+      default-filters:
+        - name: Retry
+          args:
+            retries: 3
+            statuses: BAD_GATEWAY,SERVICE_UNAVAILABLE,GATEWAY_TIMEOUT
+            backoff:
+              first-backoff: 50ms
+              max-backoff: 500ms
+              factor: 2
+        - AddRequestHeader=X-Gateway, api-gateway
+        - RemoveRequestHeader=Cookie
+        - name: StandardResponseFilter
+        - name: TokenRelay
+        # Global Rate Limiting 활성화 - 모든 서비스에 기본 적용
+        - name: RequestRateLimiter
+          args:
+            rate-limiter: "#{@defaultRedisRateLimiter}"
+            key-resolver: "#{@userKeyResolver}"
+            deny-empty-key: false
+      routes:
+        # User Service - 관리자 전용 경로
+        - id: user-service-admin
+          uri: http://localhost:8081
+          predicates:
+            - Path=/gateway/users/admin/**
+          filters:
+            - name: RewritePath
+              args:
+                regexp: /gateway/users/admin/(?<segment>.*)
+                replacement: /api/admin/${segment}
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@userServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+
+        # User Service - GET, POST, PUT, DELETE 요청
+        - id: user-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/gateway/users/**
+            - Method=GET,POST,PUT,DELETE
+          filters:
+            - name: RewritePath
+              args:
+                regexp: /gateway/users/(?<segment>.*)
+                replacement: /${segment}
+            - AddRequestHeader=X-Gateway-Source, api-gateway
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@userServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+
+        # Admin Service - 관리자 전용 경로
+        - id: admin-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/gateway/admin/**
+          filters:
+            - name: RewritePath
+              args:
+                regexp: /gateway/admin/(?<segment>.*)
+                replacement: /api/admin/${segment}
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@userServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+
+        # API Management - 관리자 전용 경로
+        - id: api-management-admin
+          uri: http://localhost:8082
+          predicates:
+            - Path=/gateway/apimgmt/admin/**
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: apiMgmtSvcCb
+                fallback-uri: forward:/fallback/api-management
+
+        # API Management - GET, POST, PUT, DELETE 요청
+        - id: api-management-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/gateway/apimgmt/**
+            - Method=GET,POST,PUT,DELETE
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: apiMgmtSvcCb
+                fallback-uri: forward:/fallback/api-management
+
+        # Custom API - 관리자 전용 경로
+        - id: custom-api-admin
+          uri: http://localhost:8083
+          predicates:
+            - Path=/gateway/customapi/admin/**
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: customApiMgmtSvcCb
+                fallback-uri: forward:/fallback/custom-api-management
+
+        # Custom API - GET, POST, PUT, DELETE 요청
+        - id: custom-api-management-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/gateway/customapi/**
+            - Method=GET,POST,PUT,DELETE
+          filters:
+            - StripPrefix=2
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: customApiMgmtSvcCb
+                fallback-uri: forward:/fallback/custom-api-management
+
+        # 모니터링 서비스 라우트 (8084) - 관리자 전용
+        - id: monitoring-service-local
+          uri: http://localhost:8084
+          predicates:
+            - Path=/gateway/monitoring/**
+            - Method=GET,POST,PUT,DELETE
+          filters:
+            - StripPrefix=2
+            # Monitoring Service Rate Limiting 활성화 (15req/s, 30 burst)
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@managementServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: monitoringSvcCb
+                fallback-uri: forward:/fallback/monitoring
+
+        # AI 서비스 라우트 (POST /ai/generate/custom-api)
+        - id: ai-service-generate-custom-api
+          uri: http://localhost:8085
+          predicates:
+            - Path=/ai/generate/custom-api
+            - Method=POST
+          filters:
+            # AI Service Rate Limiting 활성화 (5req/s, 10 burst, 2 tokens)
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@aiServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: aiSvcCb
+                fallback-uri: forward:/fallback/ai-service
+
+        # 커스텀 API 사용 라우트 (GET /custom/apiName={커스텀API이름})
+        - id: ai-service-custom-api-usage
+          uri: http://localhost:8085
+          predicates:
+            - Path=/custom/**
+            - Method=GET
+          filters:
+            # AI Service Rate Limiting 활성화 (5req/s, 10 burst, 2 tokens)
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@aiServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: aiSvcCb
+                fallback-uri: forward:/fallback/ai-service
+
+# 서버 설정
+server:
+  port: ${SERVER_PORT:8080}
+
+# Redis 활성화
+redis:
+  enabled: ${redis.enabled:true}
+
+# Kafka 설정
+kafka:
+  enabled: ${kafka.enabled:true}
+
+# Gateway 로깅 설정
+gateway:
+  logging:
+    enabled: ${GATEWAY_LOGGING_ENABLED:true}
+
+# 로깅 설정
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Auth0 설정
+auth0:
+  audience: ${AUTH0_AUDIENCE:http://localhost:8080/}
+  issuerUri: ${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}
+  client-id: ${AUTH0_CLIENT_ID:}
+  logout-redirect-uri: ${AUTH0_LOGOUT_REDIRECT_URI:http://localhost:8080/auth/logout-success}
+  postLogoutUri: ${AUTH0_POST_LOGOUT_URI:http://localhost:8080/public/auth-test.html}
+
+# 관리 엔드포인트 - 모니터링용은 공개, 나머지는 관리자 전용
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway,circuitbreakers,env,beans,configprops
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    info:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    gateway:
+      enabled: true
+    circuitbreakers:
+      enabled: true
