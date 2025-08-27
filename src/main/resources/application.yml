@@ -11,36 +11,34 @@ spring:
     # WebFlux 환경에서 Actuator 활성화
     web-application-type: reactive
 
-  # Kafka 설정 - User Service와 공유
+  # Kafka 설정 - User Service와 동일 설정
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    producer:
-      client-id: api-gateway-producer
-      acks: all
-      retries: 3
-      batch-size: 16384
-      linger-ms: 5
-      buffer-memory: 33554432
-      compression-type: snappy
-      enable-idempotence: true
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
-      client-id: api-gateway-consumer
-      group-id: api-gateway-group
+      group-id: ${SERVICE_NAME:api-gateway}-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-        bootstrap.servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+        max.poll.records: 100
+        session.timeout.ms: 30000
+        heartbeat.interval.ms: 3000
       enable-auto-commit: false
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        acks: all
+        retries: 3
+        batch.size: 16384
+        linger.ms: 5
+        buffer.memory: 33554432
+        compression.type: snappy
     listener:
       ack-mode: manual_immediate
     template:
-      default-topic: user-events
+      default-topic: user-service-events
 
   # Redis 설정 - User Service와 공유
   data:
@@ -102,6 +100,8 @@ spring:
         - RemoveRequestHeader=Cookie
         # - name: StandardResponseFilter  # 임시 비활성화 - 빈 응답 버그 수정 필요
         - name: TokenRelay
+        # JWT 토큰에서 사용자 정보를 헤더로 변환하는 필터
+        - name: JwtUserHeaderFilter
         # Global Rate Limiting 활성화 - 모든 서비스에 기본 적용
         - name: RequestRateLimiter
           args:
@@ -109,12 +109,34 @@ spring:
             key-resolver: "#{@userKeyResolver}"
             deny-empty-key: false
       routes:
+        # *** User operations under auth path - specific routes first ***
+        # /auth/users/** 경로를 /api/users/** 로 라우팅 (JWT 검증 필요)
+        - id: auth-users-routes
+          uri: http://localhost:8081
+          predicates:
+            - Path=/auth/users/**
+          filters:
+            - name: RewritePath
+              args:
+                regexp: /auth/users/(?<segment>.*)
+                replacement: /api/users/${segment}
+            - AddRequestHeader=X-Gateway-Source, api-gateway-auth-users
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@userServiceRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+
         # *** 새로 추가된 라우트: Auth0 인증 경로 (토큰 검증 없음) ***
-        # /auth/** 경로는 토큰 검증 없이 User Service로 라우팅
+        # /auth/** 경로는 토큰 검증 없이 User Service로 라우팅 (users는 별도 처리)
         - id: auth-routes-public
           uri: http://localhost:8081
           predicates:
-            - Path=/auth/**
+            - Path=/auth/login,/auth/login-success,/auth/login-error,/auth/user-info,/auth/logout,/auth/logout-success,/auth/config
           filters:
             - name: RewritePath
               args:
