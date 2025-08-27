@@ -37,7 +37,9 @@
       "Bash(SPRING_REDIS_PORT=6381 ./gradlew bootRun)",
       "Bash(SPRING_REDIS_PORT=6381 ./gradlew compileJava)",
       "Bash(git rm:*)",
-      "Bash(.\\gradlew.bat compileJava:*)"
+      "Bash(.\\gradlew.bat compileJava:*)",
+      "Bash(docker run:*)",
+      "Read(C:\\workspace\\BE-UserService/**)"
     ],
     "deny": [],
     "additionalDirectories": [

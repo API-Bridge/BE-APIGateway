@@ -40,29 +40,31 @@ import java.util.Map;
  * - 공개 엔드포인트 설정 (/public/**, /actuator/**)
  * - 표준 HTTP 상태 코드 에러 응답
  */
-@Configuration
-@EnableWebFluxSecurity
+//@Configuration  // 새로운 NewSecurityConfig 사용으로 비활성화
+//@EnableWebFluxSecurity
 public class SecurityConfig {
 
-    @Value("${auth0.audience}")
-    private String audience;
+    // Auth0 API Identifier를 audience로 직접 설정 (Client ID도 허용)
+    private String audience = "https://api.api-bridge.com";
 
     @Value("${auth0.issuerUri}")
     private String issuer;
 
-    @Value("${auth0.logout-redirect-uri}")
-    private String logoutRedirectUri;
+    // logout-redirect-uri는 User Service에서 처리하므로 API Gateway에서는 불필요
+    // @Value("${auth0.logout-redirect-uri}")
+    // private String logoutRedirectUri;
 
     // 테스트 모드일 때 TestJwtConfig의 디코더를 주입받기 위함
     @Autowired(required = false)
     private ReactiveJwtDecoder testReactiveJwtDecoder;
 
+    // *** OAuth2 Client 의존성 주석 처리됨 - User Service로 Auth0 로그인 처리 이전 ***
     // OAuth2 클라이언트 등록 정보 저장소
     // OIDC 로그아웃 핸들러에서 사용됨
-    private final ReactiveClientRegistrationRepository clientRegistrationRepository;
+    // private final ReactiveClientRegistrationRepository clientRegistrationRepository;
 
-    public SecurityConfig(ReactiveClientRegistrationRepository clientRegistrationRepository) {
-        this.clientRegistrationRepository = clientRegistrationRepository;
+    public SecurityConfig(/* ReactiveClientRegistrationRepository clientRegistrationRepository */) {
+        // this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
     /**
@@ -80,17 +82,19 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 // HTTP Basic 인증 비활성화
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-                // OAuth2 Login 설정 추가
-                .oauth2Login(oauth2 -> oauth2
-                        .authenticationSuccessHandler((webFilterExchange, authentication) -> {
-                            // 로그인 성공 시 login-success 페이지로 리다이렉트
-                            webFilterExchange.getExchange().getResponse().setStatusCode(org.springframework.http.HttpStatus.FOUND);
-                            webFilterExchange.getExchange().getResponse().getHeaders().add("Location", "/auth/login-success");
-                            return webFilterExchange.getExchange().getResponse().setComplete();
-                        })
-                )
-                // OAuth2 Login용 세션은 활성화, JWT 검증은 stateless 유지
-                // .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                // Stateless 인증 - 세션 사용하지 않음
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+                // *** OAuth2 Login 설정 주석 처리됨 - User Service로 Auth0 로그인 처리 이전 ***
+                // Auth0 OAuth2 로그인이 User Service로 이전되었습니다.
+                // 롤백이 필요한 경우 아래 주석을 해제하세요.
+                // .oauth2Login(oauth2 -> oauth2
+                //         .authenticationSuccessHandler((webFilterExchange, authentication) -> {
+                //             // 로그인 성공 시 login-success 페이지로 리다이렉트
+                //             webFilterExchange.getExchange().getResponse().setStatusCode(org.springframework.http.HttpStatus.FOUND);
+                //             webFilterExchange.getExchange().getResponse().getHeaders().add("Location", "/auth/login-success");
+                //             return webFilterExchange.getExchange().getResponse().setComplete();
+                //         })
+                // )
                 // 경로별 접근 권한 설정
                 .authorizeExchange(exchanges -> exchanges
 // --- 모든 permitAll() 경로를 여기에 모아두어야 합니다. ---
@@ -134,6 +138,8 @@ public class SecurityConfig {
                                 .pathMatchers("/actuator/circuitbreakers", "/actuator/circuitbreakers/**").permitAll()
                                 
                                 // Gateway API 경로들 - OAuth2 세션 인증으로 임시 변경
+                                // HEAD 요청은 허용 (브라우저 preflight 및 존재 여부 확인용)
+                                .pathMatchers(HttpMethod.HEAD, "/gateway/users/**").permitAll()
                                 .pathMatchers("/gateway/users/**").authenticated()
                                 .pathMatchers("/gateway/apimgmt/**").authenticated()
                                 .pathMatchers("/gateway/customapi/**").authenticated()
@@ -205,20 +211,39 @@ public class SecurityConfig {
                                 .jwtAuthenticationConverter(reactiveJwtAuthenticationConverter())
                         )
                         .authenticationEntryPoint((exchange, ex) -> {
-                            // JWT 검증 실패 시 401 Unauthorized 응답
+                            // JWT 검증 실패 시 401 Unauthorized 응답 + 상세 디버깅
+                            String requestPath = exchange.getRequest().getURI().getPath();
+                            String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+                            
+                            System.out.println("=== JWT 인증 실패 디버깅 ===");
+                            System.out.println("요청 경로: " + requestPath);
+                            System.out.println("Authorization 헤더 존재: " + (authHeader != null));
+                            if (authHeader != null) {
+                                System.out.println("Authorization 헤더 길이: " + authHeader.length());
+                                System.out.println("토큰 시작: " + (authHeader.length() > 20 ? authHeader.substring(0, 30) + "..." : authHeader));
+                            }
+                            System.out.println("예외 유형: " + ex.getClass().getSimpleName());
+                            System.out.println("예외 메시지: " + ex.getMessage());
+                            if (ex.getCause() != null) {
+                                System.out.println("원인: " + ex.getCause().getClass().getSimpleName());
+                                System.out.println("원인 메시지: " + ex.getCause().getMessage());
+                            }
+                            System.out.println("==========================");
+                            
                             exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
                             exchange.getResponse().getHeaders().add("Content-Type", "application/json");
                             String errorMessage = """
                                 {
                                     "error": "Unauthorized",
-                                    "message": "Invalid JWT token", 
+                                    "message": "Invalid JWT token: %s", 
                                     "status": 401,
                                     "timestamp": "%s",
                                     "path": "%s"
                                 }
                                 """.formatted(
+                                    ex.getMessage(),
                                     java.time.Instant.now().toString(),
-                                    exchange.getRequest().getURI().getPath()
+                                    requestPath
                                 );
                             org.springframework.core.io.buffer.DataBuffer buffer = 
                                 exchange.getResponse().bufferFactory().wrap(errorMessage.getBytes());
@@ -243,13 +268,13 @@ public class SecurityConfig {
 
     /**
      * JWT 디코더 결정 로직
-     * 테스트 모드일 때는 TestJwtConfig의 디코더를, 그 외에는 JWE/JWS를 모두 처리하는 커스텀 디코더 사용
+     * 테스트 모드일 때는 TestJwtConfig의 디코더를, 그 외에는 기본 JWS 디코더 사용
      */
     private ReactiveJwtDecoder getJwtDecoder() {
         if (testReactiveJwtDecoder != null) {
             return testReactiveJwtDecoder;
         }
-        return customReactiveJwtDecoder();
+        return reactiveJwtDecoder();
     }
 
     /**
@@ -265,13 +290,19 @@ public class SecurityConfig {
         // issuer 포맷 보정: 끝의 슬래시 보장
         String normalizedIssuer = issuer.endsWith("/") ? issuer : issuer + "/";
 
+        System.out.println("=== API Gateway JWT 디코더 초기화 ===");
+        System.out.println("Issuer: " + normalizedIssuer);
+        System.out.println("JWKS URI: " + normalizedIssuer + ".well-known/jwks.json");
+        System.out.println("Audience: " + audience);
+        System.out.println("====================================");
+
         // Auth0 JWKS 엔드포인트에서 JWT 디코더 생성 (RS256)
         NimbusReactiveJwtDecoder jwtDecoder = NimbusReactiveJwtDecoder
                 .withJwkSetUri(normalizedIssuer + ".well-known/jwks.json")
                 .jwsAlgorithm(SignatureAlgorithm.RS256)
                 .build();
 
-        // JWT 토큰 검증 설정
+        // JWT 토큰 검증 설정 - ID 토큰도 허용하도록 Audience 검증 완화
         OAuth2TokenValidator<Jwt> audienceValidator = new AudienceValidator(audience);
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(normalizedIssuer);
         OAuth2TokenValidator<Jwt> withAudience = new DelegatingOAuth2TokenValidator<>(withIssuer, audienceValidator);
@@ -305,91 +336,6 @@ public class SecurityConfig {
         return jwtConverter;
     }
 
-    /**
-     * JWE와 JWS를 모두 처리할 수 있는 커스텀 JWT 디코더
-     * Auth0에서 JWE 형태의 Access Token을 디코딩할 수 있도록 함
-     */
-    @Bean
-    @org.springframework.context.annotation.Primary
-    public ReactiveJwtDecoder customReactiveJwtDecoder() {
-        return new CustomReactiveJwtDecoder();
-    }
-
-    /**
-     * 커스텀 Reactive JWT 디코더 클래스
-     * JWE(암호화된 토큰)와 JWS(서명된 토큰)를 모두 처리 가능
-     */
-    private class CustomReactiveJwtDecoder implements ReactiveJwtDecoder {
-        
-        private final ReactiveJwtDecoder jwsDecoder;
-        
-        public CustomReactiveJwtDecoder() {
-            // 기존 JWS 디코더 초기화
-            this.jwsDecoder = reactiveJwtDecoder();
-        }
-        
-        @Override
-        public reactor.core.publisher.Mono<org.springframework.security.oauth2.jwt.Jwt> decode(String token) {
-            try {
-                // 토큰 헤더를 파싱해서 JWE인지 JWS인지 확인
-                String[] parts = token.split("\\.");
-                if (parts.length < 3) {
-                    return reactor.core.publisher.Mono.error(new org.springframework.security.oauth2.jwt.JwtException("Invalid JWT format"));
-                }
-                
-                // Header 디코딩
-                String headerJson = new String(java.util.Base64.getUrlDecoder().decode(parts[0]));
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                com.fasterxml.jackson.databind.JsonNode header = mapper.readTree(headerJson);
-                
-                // JWE인지 확인 (enc 필드가 있으면 JWE)
-                if (header.has("enc")) {
-                    // JWE 토큰 처리 - 기본 사용자 정보로 JWT 생성
-                    return decodeJweToken(token);
-                } else {
-                    // JWS 토큰은 기존 디코더로 처리
-                    return jwsDecoder.decode(token);
-                }
-                
-            } catch (Exception e) {
-                return reactor.core.publisher.Mono.error(new org.springframework.security.oauth2.jwt.JwtException("Failed to decode JWT", e));
-            }
-        }
-        
-        /**
-         * JWE 토큰을 처리하는 메서드
-         * 실제 복호화는 복잡하므로, 임시로 기본 JWT 클레임을 생성
-         */
-        private reactor.core.publisher.Mono<org.springframework.security.oauth2.jwt.Jwt> decodeJweToken(String token) {
-            try {
-                // JWE 토큰의 경우 OAuth2 세션에서 사용자 정보를 가져와서 JWT 클레임 생성
-                java.time.Instant now = java.time.Instant.now();
-                java.time.Instant exp = now.plus(java.time.Duration.ofHours(1));
-                
-                // 기본 클레임 생성 - 실제로는 JWE를 디코딩해야 하지만 임시 처리
-                java.util.Map<String, Object> claims = new java.util.HashMap<>();
-                claims.put("sub", "jwe-user");
-                claims.put("aud", audience);
-                claims.put("iss", issuer);
-                claims.put("exp", exp.getEpochSecond());
-                claims.put("iat", now.getEpochSecond());
-                claims.put("scope", "openid profile email");
-                
-                // JWT 객체 생성
-                org.springframework.security.oauth2.jwt.Jwt jwt = new org.springframework.security.oauth2.jwt.Jwt(
-                    token,
-                    now,
-                    exp,
-                    java.util.Map.of("alg", "dir", "enc", "A256GCM"),
-                    claims
-                );
-                
-                return reactor.core.publisher.Mono.just(jwt);
-                
-            } catch (Exception e) {
-                return reactor.core.publisher.Mono.error(new org.springframework.security.oauth2.jwt.JwtException("Failed to process JWE token", e));
-            }
-        }
-    }
+    // 커스텀 JWE 디코더는 제거 - Auth0 ID 토큰은 JWS 형태이므로 불필요
 
 }

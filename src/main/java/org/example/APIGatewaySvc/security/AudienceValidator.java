@@ -17,6 +17,8 @@ import org.springframework.security.oauth2.jwt.Jwt;
  */
 public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
     private final String audience;
+    // Auth0 Client ID도 유효한 audience로 허용 (하위 호환성) 
+    private static final String AUTH0_CLIENT_ID = "gleGDUmC5iSKvbt4IN12t7cAIHfwEYQI";
 
     public AudienceValidator(String audience) {
         this.audience = audience;
@@ -26,8 +28,11 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
     public OAuth2TokenValidatorResult validate(Jwt jwt) {
         OAuth2Error error = new OAuth2Error("invalid_audience", "The required audience is missing", null);
 
-        if (jwt.getAudience() != null && jwt.getAudience().contains(audience)) {
-            return OAuth2TokenValidatorResult.success();
+        if (jwt.getAudience() != null) {
+            // API Identifier 또는 Client ID를 audience로 허용
+            if (jwt.getAudience().contains(audience) || jwt.getAudience().contains(AUTH0_CLIENT_ID)) {
+                return OAuth2TokenValidatorResult.success();
+            }
         }
 
         return OAuth2TokenValidatorResult.failure(error);

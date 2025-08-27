@@ -46,7 +46,7 @@ spring:
   data:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}
-      port: ${SPRING_REDIS_PORT:6381}
+      port: ${SPRING_REDIS_PORT:6379}
       timeout: 5000ms
       connect-timeout: 5000ms
       lettuce:
@@ -60,28 +60,31 @@ spring:
   # OAuth2 / JWT 설정
   security:
     oauth2:
-      client:
-        registration:
-          auth0:
-            client-id: ${AUTH0_CLIENT_ID:}
-            client-secret: ${AUTH0_CLIENT_SECRET:}
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            scope:
-              - openid
-              - profile
-              - email
-        provider:
-          auth0:
-            issuer-uri: https://api-bridge.us.auth0.com/
-            authorization-uri: https://api-bridge.us.auth0.com/authorize
-            token-uri: https://api-bridge.us.auth0.com/oauth/token
-            user-info-uri: https://api-bridge.us.auth0.com/userinfo
-            jwk-set-uri: https://api-bridge.us.auth0.com/.well-known/jwks.json
+      # *** OAuth2 Client 설정 주석 처리됨 - User Service로 Auth0 로그인 처리 이전 ***
+      # Auth0 OAuth2 로그인이 User Service로 이전되었습니다.
+      # 롤백이 필요한 경우 아래 주석을 해제하세요.
+      # client:
+      #   registration:
+      #     auth0:
+      #       client-id: ${AUTH0_CLIENT_ID:}
+      #       client-secret: ${AUTH0_CLIENT_SECRET:}
+      #       authorization-grant-type: authorization_code
+      #       redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+      #       scope:
+      #         - openid
+      #         - profile
+      #         - email
+      #   provider:
+      #     auth0:
+      #       issuer-uri: https://api-bridge.us.auth0.com/
+      #       authorization-uri: https://api-bridge.us.auth0.com/authorize
+      #       token-uri: https://api-bridge.us.auth0.com/oauth/token
+      #       user-info-uri: https://api-bridge.us.auth0.com/userinfo
+      #       jwk-set-uri: https://api-bridge.us.auth0.com/.well-known/jwks.json
       resourceserver:
         jwt:
           issuer-uri: ${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}
-          audience: ${AUTH0_AUDIENCE:http://localhost:8080/}
+          audience: ${AUTH0_AUDIENCE:https://api.api-bridge.com}  # Auth0 API Identifier
 
   # Cloud Gateway 설정
   cloud:
@@ -97,7 +100,7 @@ spring:
               factor: 2
         - AddRequestHeader=X-Gateway, api-gateway
         - RemoveRequestHeader=Cookie
-        - name: StandardResponseFilter
+        # - name: StandardResponseFilter  # 임시 비활성화 - 빈 응답 버그 수정 필요
         - name: TokenRelay
         # Global Rate Limiting 활성화 - 모든 서비스에 기본 적용
         - name: RequestRateLimiter
@@ -106,6 +109,63 @@ spring:
             key-resolver: "#{@userKeyResolver}"
             deny-empty-key: false
       routes:
+        # *** 새로 추가된 라우트: Auth0 인증 경로 (토큰 검증 없음) ***
+        # /auth/** 경로는 토큰 검증 없이 User Service로 라우팅
+        - id: auth-routes-public
+          uri: http://localhost:8081
+          predicates:
+            - Path=/auth/**
+          filters:
+            - name: RewritePath
+              args:
+                regexp: /auth/(?<segment>.*)
+                replacement: /api/auth/${segment}
+            # JWT 검증 필터 제외 - 공개 접근 허용
+            - AddRequestHeader=X-Gateway-Source, api-gateway-auth
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@defaultRedisRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+
+        # OAuth2 경로를 User Service로 라우팅 (Auth0 OAuth2 처리)
+        - id: oauth2-routes-public
+          uri: http://localhost:8081
+          predicates:
+            - Path=/oauth2/**
+          filters:
+            - AddRequestHeader=X-Gateway-Source, api-gateway-oauth2
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@defaultRedisRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+
+        # OAuth2 콜백 경로를 User Service로 라우팅 (Auth0 콜백 처리)
+        - id: oauth2-callback-routes-public
+          uri: http://localhost:8081
+          predicates:
+            - Path=/login/oauth2/code/**
+          filters:
+            - AddRequestHeader=X-Gateway-Source, api-gateway-oauth2-callback
+            - name: RequestRateLimiter
+              args:
+                rate-limiter: "#{@defaultRedisRateLimiter}"
+                key-resolver: "#{@userKeyResolver}"
+                deny-empty-key: false
+            - name: CircuitBreaker
+              args:
+                name: userSvcCb
+                fallback-uri: forward:/fallback/user-service
+
         # User Service - 관리자 전용 경로
         - id: user-service-admin
           uri: http://localhost:8081
@@ -126,12 +186,12 @@ spring:
                 name: userSvcCb
                 fallback-uri: forward:/fallback/user-service
 
-        # User Service - GET, POST, PUT, DELETE 요청
+        # User Service - GET, POST, PUT, DELETE, HEAD 요청
         - id: user-service
           uri: http://localhost:8081
           predicates:
             - Path=/gateway/users/**
-            - Method=GET,POST,PUT,DELETE
+            - Method=GET,POST,PUT,DELETE,HEAD
           filters:
             - name: RewritePath
               args:
@@ -299,7 +359,14 @@ server:
 
 # Redis 활성화
 redis:
-  enabled: ${redis.enabled:true}
+  enabled: true
+
+# Rate Limiting 설정
+rate-limit:
+  default:
+    replenish-rate: 50      # 초당 50개 요청 허용
+    burst-capacity: 100     # 버스트 100개 허용
+    requested-tokens: 1     # 요청당 1토큰
 
 # Kafka 설정
 kafka:
@@ -308,7 +375,7 @@ kafka:
 # Gateway 로깅 설정
 gateway:
   logging:
-    enabled: ${GATEWAY_LOGGING_ENABLED:true}
+    enabled: ${GATEWAY_LOGGING_ENABLED:false}
 
 # 로깅 설정
 logging:
@@ -318,13 +385,14 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
-# Auth0 설정
+# Auth0 설정 (JWT 검증용 - API Identifier를 audience로 사용)
 auth0:
-  audience: ${AUTH0_AUDIENCE:http://localhost:8080/}
+  audience: ${AUTH0_AUDIENCE:https://api.api-bridge.com}  # Auth0 API Identifier
   issuerUri: ${AUTH0_ISSUER_URI:https://api-bridge.us.auth0.com/}
-  client-id: ${AUTH0_CLIENT_ID:}
-  logout-redirect-uri: ${AUTH0_LOGOUT_REDIRECT_URI:http://localhost:8080/auth/logout-success}
-  postLogoutUri: ${AUTH0_POST_LOGOUT_URI:http://localhost:8080/public/auth-test.html}
+  # *** OAuth2 Client 설정 주석 처리됨 - User Service로 Auth0 로그인 처리 이전 ***
+  # client-id: ${AUTH0_CLIENT_ID:}
+  # logout-redirect-uri: ${AUTH0_LOGOUT_REDIRECT_URI:http://localhost:8081/api/auth/logout-success}
+  # postLogoutUri: ${AUTH0_POST_LOGOUT_URI:http://localhost:8081/public/auth-test.html}
 
 # 관리 엔드포인트 - 모니터링용은 공개, 나머지는 관리자 전용
 management:

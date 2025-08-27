@@ -45,7 +45,7 @@ import java.util.UUID;
  * - /gateway/** 경로의 모든 마이크로서비스 응답
  * - Content-Type이 application/json인 응답만 래핑
  */
-@Component
+// @Component  // 임시 비활성화 - 빈 응답 버그로 인해 주석 처리
 public class StandardResponseFilter extends AbstractGatewayFilterFactory<StandardResponseFilter.Config> {
 
     private final ObjectMapper objectMapper;
@@ -82,11 +82,11 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
                     if (body instanceof Flux) {
                         Flux<? extends DataBuffer> fluxBody = Flux.from(body);
                         
-                        return super.writeWith(fluxBody.collectList().flatMap(dataBuffers -> {
+                        return super.writeWith(fluxBody.buffer().flatMap(dataBuffers -> {
                             // 바이너리 콘텐츠 타입인 경우 래핑하지 않고 통과
                             if (isBinaryContent(originalResponse)) {
-                                return Flux.fromIterable(dataBuffers).collectList()
-                                        .map(list -> bufferFactory.join(list));
+                                DataBuffer joinedBuffer = bufferFactory.join(dataBuffers);
+                                return Mono.just(joinedBuffer);
                             }
 
                             // 응답 본문을 문자열로 변환
