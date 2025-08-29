@@ -94,13 +94,13 @@ public class CustomJwtAuthenticationFilter implements WebFilter {
         String subject = payload.get("sub").asText();
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         
-        // roles 클레임에서 권한 추출
-        JsonNode rolesNode = payload.get("role");
-        if (rolesNode != null && rolesNode.isArray()) {
-            rolesNode.forEach(role -> {
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.asText().toUpperCase()));
-            });
-        }
+//        // roles 클레임에서 권한 추출 - 관리자 확인 로직 변경으로 사용 X
+//        JsonNode rolesNode = payload.get("role");
+//        if (rolesNode != null && rolesNode.isArray()) {
+//            rolesNode.forEach(role -> {
+//                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.asText().toUpperCase()));
+//            });
+//        }
         
         // permissions 클레임에서 권한 추출
         JsonNode permissionsNode = payload.get("permissions");

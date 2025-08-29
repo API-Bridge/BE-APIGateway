@@ -116,17 +116,25 @@ public class EnhancedJwtValidator {
             if (audNode.isArray()) {
                 for (JsonNode aud : audNode) {
                     String audValue = aud.asText();
-                    if (expectedAudience.equals(audValue) || clientId.equals(audValue)) {
+                    if (expectedAudience.equals(audValue)) {
                         audienceValid = true;
-                        System.out.println("Audience 검증 성공: " + audValue);
+                        System.out.println("Audience 검증 성공 (API Identifier 일치): " + audValue);
+                        break;
+                    }
+                    if (clientId.equals(audValue)) {
+                        audienceValid = true;
+                        System.out.println("Audience 검증 성공 (Client ID 일치): " + audValue);
                         break;
                     }
                 }
             } else {
                 String audValue = audNode.asText();
-                audienceValid = expectedAudience.equals(audValue) || clientId.equals(audValue);
-                if (audienceValid) {
-                    System.out.println("Audience 검증 성공: " + audValue);
+                if (expectedAudience.equals(audValue)) {
+                    audienceValid = true;
+                    System.out.println("Audience 검증 성공 (API Identifier 일치): " + audValue);
+                } else if (clientId.equals(audValue)) {
+                    audienceValid = true;
+                    System.out.println("Audience 검증 성공 (Client ID 일치): " + audValue);
                 }
             }
             

@@ -381,7 +381,7 @@ server:
 
 # Redis 활성화
 redis:
-  enabled: true
+  enabled: ${REDIS_ENABLED:true}
 
 # Rate Limiting 설정
 rate-limit:
@@ -392,7 +392,7 @@ rate-limit:
 
 # Kafka 설정
 kafka:
-  enabled: ${kafka.enabled:true}
+  enabled: ${KAFKA_ENABLED:true}
 
 # Gateway 로깅 설정
 gateway:
@@ -415,6 +415,10 @@ auth0:
   # client-id: ${AUTH0_CLIENT_ID:}
   # logout-redirect-uri: ${AUTH0_LOGOUT_REDIRECT_URI:http://localhost:8081/api/auth/logout-success}
   # postLogoutUri: ${AUTH0_POST_LOGOUT_URI:http://localhost:8081/public/auth-test.html}
+
+# JWT Test Mode 설정 (개발/테스트용)
+jwt:
+  test-mode: ${JWT_TEST_MODE:false}
 
 # 관리 엔드포인트 - 모니터링용은 공개, 나머지는 관리자 전용
 management:
