@@ -38,17 +38,30 @@ public class EnhancedJwtValidator {
     private long lastCacheUpdate = 0;
     
     public EnhancedJwtValidator() {
-        this.webClient = WebClient.builder().build();
+        // WebClient를 완전히 독립적으로 설정 (Gateway 설정과 분리)
+        this.webClient = WebClient.builder()
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(1024 * 1024))
+                .filter((request, next) -> {
+                    // 요청 로깅
+                    System.out.println("=== WebClient 요청 ===");
+                    System.out.println("Method: " + request.method());
+                    System.out.println("URL: " + request.url());
+                    System.out.println("Headers: " + request.headers());
+                    System.out.println("========================");
+                    return next.exchange(request);
+                })
+                .build();
         this.objectMapper = new ObjectMapper();
         this.keyCache = new HashMap<>();
-        this.jwksUri = "https://api-bridge.us.auth0.com/.well-known/jwks.json";
-        this.expectedIssuer = "https://api-bridge.us.auth0.com/";
-        this.expectedAudience = "https://api.api-bridge.com";
+        this.jwksUri = "https://dev-q64r0n0blzhir6y0.us.auth0.com/.well-known/jwks.json";
+        this.expectedIssuer = "https://dev-q64r0n0blzhir6y0.us.auth0.com/";
+        this.expectedAudience = "https://ApiBridge/";
         
         System.out.println("=== Enhanced JWT Validator 초기화 ===");
         System.out.println("JWKS URI: " + jwksUri);
         System.out.println("Expected Issuer: " + expectedIssuer);
         System.out.println("Expected Audience: " + expectedAudience);
+        System.out.println("WebClient 설정 완료 (로깅 활성화)");
         System.out.println("=====================================");
     }
     
@@ -81,7 +94,8 @@ public class EnhancedJwtValidator {
             // 2. 헤더 파싱
             JsonNode header = parseBase64Json(parts[0]);
             String alg = header.get("alg").asText();
-            String kid = header.get("kid").asText();
+            JsonNode kidNode = header.get("kid");
+            String kid = kidNode != null ? kidNode.asText() : null;
             
             System.out.println("JWT 헤더:");
             System.out.println("  - alg: " + alg);
@@ -110,7 +124,7 @@ public class EnhancedJwtValidator {
             }
             
             // Audience 검증 (API Identifier 또는 Client ID 허용)
-            String clientId = "gleGDUmC5iSKvbt4IN12t7cAIHfwEYQI"; // Auth0 Client ID
+            String clientId = "fzwFru3aG5pUJWsofqjxXxbYmWfzrnFX"; // Auth0 Client ID
             boolean audienceValid = false;
             
             if (audNode.isArray()) {
@@ -183,17 +197,37 @@ public class EnhancedJwtValidator {
      * Key ID로 공개키를 가져옵니다
      */
     private Mono<PublicKey> getPublicKey(String kid) {
-        // 캐시 확인 (테스트를 위해 임시로 비활성화)
-        // if (keyCache.containsKey(kid) && (System.currentTimeMillis() - lastCacheUpdate) < CACHE_TTL) {
-        //     System.out.println("캐시에서 공개키 사용: " + kid);
-        //     return Mono.just(keyCache.get(kid));
-        // }
+        // 캐시 확인 (다시 활성화하여 중복 요청 방지)
+        if (keyCache.containsKey(kid) && (System.currentTimeMillis() - lastCacheUpdate) < CACHE_TTL) {
+            System.out.println("캐시에서 공개키 사용: " + kid);
+            return Mono.just(keyCache.get(kid));
+        }
         
         System.out.println("JWKS에서 공개키 가져오는 중: " + kid);
+        System.out.println("JWKS URI 요청: " + jwksUri);
+        System.out.println("=== JWKS 요청 시작 - GET 메서드 ===");
         return webClient.get()
                 .uri(jwksUri)
+                .header("Accept", "application/json")
                 .retrieve()
+                .onStatus(status -> !status.is2xxSuccessful(), response -> {
+                    System.out.println("JWKS 요청 실패 - HTTP Status: " + response.statusCode());
+                    System.out.println("JWKS 요청 실패 - Headers: " + response.headers().asHttpHeaders());
+                    System.out.println("JWKS 요청 실패 - URI: " + jwksUri);
+                    System.out.println("JWKS 요청 실패 - Method: GET");
+                    return response.bodyToMono(String.class)
+                        .map(body -> {
+                            System.out.println("JWKS 요청 실패 - Response Body: " + body);
+                            return new RuntimeException("JWKS 요청 실패: " + response.statusCode() + " - " + body);
+                        });
+                })
                 .bodyToMono(String.class)
+                .doOnError(error -> {
+                    System.out.println("JWKS 요청 중 네트워크 오류: " + error.getMessage());
+                    if (error.getCause() != null) {
+                        System.out.println("JWKS 요청 오류 원인: " + error.getCause().getMessage());
+                    }
+                })
                 .flatMap(jwksJson -> {
                     try {
                         System.out.println("JWKS 응답 수신: " + jwksJson.substring(0, Math.min(200, jwksJson.length())) + "...");

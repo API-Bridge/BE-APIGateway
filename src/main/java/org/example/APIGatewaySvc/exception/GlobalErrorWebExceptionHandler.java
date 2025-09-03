@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
 /**
  * Spring Cloud Gateway 전역 에러 핸들러
  * 인증/인가 실패 및 기타 예외를 RFC 7807 Problem Details 표준으로 변환
- * 
+ *
  * 주요 기능:
  * - OAuth2/JWT 인증 에러를 표준 JSON 응답으로 변환
  * - 접근 권한 에러 (403) 처리
@@ -37,7 +37,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
 
     /**
      * 모든 예외를 처리하여 적절한 HTTP 응답으로 변환
-     * 
+     *
      * @param exchange ServerWebExchange 웹 교환 객체
      * @param ex Throwable 발생한 예외
      * @return Mono<Void> Reactive 에러 응답
@@ -46,7 +46,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
         ServerHttpResponse response = exchange.getResponse();
         // Request ID 추출 (간단한 방식)
-        final String requestId = exchange.getResponse().getHeaders().getFirst("X-Request-ID") != null 
+        final String requestId = exchange.getResponse().getHeaders().getFirst("X-Request-ID") != null
             ? exchange.getResponse().getHeaders().getFirst("X-Request-ID")
             : "error-" + java.util.UUID.randomUUID().toString().substring(0, 8);
 
@@ -66,14 +66,14 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
 
     /**
      * 예외 유형별 구체적인 처리 로직
-     * 
+     *
      * @param response ServerHttpResponse 응답 객체
      * @param ex Throwable 발생한 예외
      * @param requestId String 요청 추적 ID
      * @return Mono<Void> Reactive 에러 응답
      */
     private Mono<Void> handleSpecificException(ServerHttpResponse response, Throwable ex, String requestId) {
-        
+
         // OAuth2 인증 실패 (JWT 토큰 오류)
         if (ex instanceof OAuth2AuthenticationException oauth2Ex) {
             String detail = "Invalid or expired JWT token";
@@ -119,8 +119,8 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
             response.getHeaders().add("Content-Type", MediaType.APPLICATION_PROBLEM_JSON_VALUE);
             response.getHeaders().add("X-Request-ID", requestId);
             response.getHeaders().add("Retry-After", "60");  // 1분 후 재시도 권장
-            
-            return ProblemDetailsUtil.writeCustomResponse(response, HttpStatus.TOO_MANY_REQUESTS, 
+
+            return ProblemDetailsUtil.writeCustomResponse(response, HttpStatus.TOO_MANY_REQUESTS,
                 "Rate limit exceeded", detail, requestId);
         }
 
@@ -160,14 +160,14 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
     /**
      * Rate Limiting 관련 오류 판별
      * Redis Rate Limiter에서 발생하는 요청 제한 오류 감지
-     * 
+     *
      * @param ex Throwable 예외 객체
      * @return boolean Rate Limit 초과 여부
      */
     private boolean isRateLimitExceeded(Throwable ex) {
         String message = ex.getMessage();
         if (message == null) return false;
-        
+
         return message.contains("Request rate limit exceeded") ||
                message.contains("Rate limit") ||
                message.contains("Too many requests") ||
@@ -177,14 +177,14 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
     /**
      * 외부 의존성 관련 오류 판별
      * Auth0 JWKS 엔드포인트, 다운스트림 서비스 연결 오류 등
-     * 
+     *
      * @param ex Throwable 예외 객체
      * @return boolean 외부 의존성 오류 여부
      */
     private boolean isExternalDependencyError(Throwable ex) {
         String message = ex.getMessage();
         if (message == null) return false;
-        
+
         return message.contains("Connection timeout") ||
                message.contains("Read timeout") ||
                message.contains("ConnectException") ||
@@ -195,7 +195,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
 
     /**
      * 에러 핸들러 자체 실패 시 최후 수단 응답
-     * 
+     *
      * @param response ServerHttpResponse 응답 객체
      * @param requestId String 요청 추적 ID
      * @return Mono<Void> 기본 에러 응답
@@ -208,7 +208,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
     /**
      * 구조화된 에러 로깅
      * 모니터링 및 디버깅을 위한 상세 로그 기록
-     * 
+     *
      * @param ex Throwable 발생한 예외
      * @param requestId String 요청 추적 ID
      * @param exchange ServerWebExchange 웹 교환 객체
@@ -217,7 +217,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
         String path = exchange.getRequest().getPath().value();
         String method = exchange.getRequest().getMethod().name();
         String clientIP = getClientIP(exchange);
-        
+
         if (ex instanceof AuthenticationException || ex instanceof AccessDeniedException) {
             // 인증/인가 오류는 INFO 레벨 (정상적인 보안 동작)
             logger.info("Security error - Request: {} {} {} from IP: {} - Error: {} - RequestID: {}",
@@ -233,7 +233,7 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
     /**
      * 클라이언트 IP 주소 추출
      * Proxy/Load Balancer 환경을 고려한 실제 클라이언트 IP 확인
-     * 
+     *
      * @param exchange ServerWebExchange 웹 교환 객체
      * @return String 클라이언트 IP 주소
      */
@@ -242,13 +242,13 @@ public class GlobalErrorWebExceptionHandler implements ErrorWebExceptionHandler 
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
             return xForwardedFor.split(",")[0].trim();
         }
-        
+
         String xRealIP = exchange.getRequest().getHeaders().getFirst("X-Real-IP");
         if (xRealIP != null && !xRealIP.isEmpty()) {
             return xRealIP;
         }
-        
-        return exchange.getRequest().getRemoteAddress() != null ? 
+
+        return exchange.getRequest().getRemoteAddress() != null ?
             exchange.getRequest().getRemoteAddress().getAddress().getHostAddress() : "unknown";
     }
 }

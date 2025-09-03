@@ -26,18 +26,18 @@ import java.util.List;
 public class LoggingFilter implements WebFilter {
 
     private static final Logger log = LoggerFactory.getLogger(LoggingFilter.class);
-    
+
     // 로깅에서 제외할 경로
     private static final List<String> EXCLUDED_PATHS = List.of(
         "/actuator/health",
         "/actuator/info",
         "/favicon.ico"
     );
-    
+
     // 마스킹할 헤더 목록
     private static final List<String> SENSITIVE_HEADERS = List.of(
         "authorization",
-        "x-api-key", 
+        "x-api-key",
         "x-auth-token",
         "cookie",
         "set-cookie"
@@ -47,17 +47,17 @@ public class LoggingFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getPath().value();
-        
+
         // 제외 경로 확인
         if (EXCLUDED_PATHS.stream().anyMatch(path::startsWith)) {
             return chain.filter(exchange);
         }
-        
+
         long startTime = System.currentTimeMillis();
-        
+
         // 요청 로깅
         logRequest(request);
-        
+
         return chain.filter(exchange)
                 .doOnSuccess(aVoid -> {
                     // 응답 로깅
@@ -80,7 +80,7 @@ public class LoggingFilter implements WebFilter {
             String path = request.getPath().value();
             String queryString = request.getURI().getQuery();
             String remoteAddress = getRemoteAddress(request);
-            
+
             // 헤더 정보 (민감한 헤더 마스킹)
             StringBuilder headers = new StringBuilder();
             request.getHeaders().forEach((name, values) -> {
@@ -99,7 +99,7 @@ public class LoggingFilter implements WebFilter {
                     });
                 }
             });
-            
+
             // 로그 출력
             log.info("==> HTTP {} {} {} | Remote: {} | Headers: [{}]",
                     method,
@@ -107,7 +107,7 @@ public class LoggingFilter implements WebFilter {
                     queryString != null ? "?" + queryString : "",
                     remoteAddress,
                     headers.toString());
-            
+
         } catch (Exception e) {
             log.warn("요청 로깅 중 오류 발생: {}", e.getMessage());
         }
@@ -120,7 +120,7 @@ public class LoggingFilter implements WebFilter {
         try {
             int statusCode = response.getStatusCode() != null ? response.getStatusCode().value() : 0;
             String statusText = response.getStatusCode() != null ? response.getStatusCode().toString() : "Unknown";
-            
+
             // 응답 헤더 (민감한 헤더 마스킹)
             StringBuilder headers = new StringBuilder();
             response.getHeaders().forEach((name, values) -> {
@@ -137,13 +137,13 @@ public class LoggingFilter implements WebFilter {
                     });
                 }
             });
-            
+
             log.info("<== HTTP {} {} | Duration: {}ms | Headers: [{}]",
                     statusCode,
                     statusText,
                     duration,
                     headers.toString());
-            
+
         } catch (Exception e) {
             log.warn("응답 로깅 중 오류 발생: {}", e.getMessage());
         }
@@ -157,14 +157,14 @@ public class LoggingFilter implements WebFilter {
             String method = request.getMethod().name();
             String path = request.getPath().value();
             String errorMessage = SecurityMaskingUtil.maskSensitiveInfo(throwable.getMessage());
-            
+
             log.error("!!! HTTP {} {} | Duration: {}ms | Error: {} - {}",
                     method,
                     path,
                     duration,
                     throwable.getClass().getSimpleName(),
                     errorMessage);
-            
+
         } catch (Exception e) {
             log.warn("에러 로깅 중 오류 발생: {}", e.getMessage());
         }
@@ -180,16 +180,16 @@ public class LoggingFilter implements WebFilter {
             // 첫 번째 IP 주소 반환
             return xForwardedFor.split(",")[0].trim();
         }
-        
+
         // X-Real-IP 헤더 확인
         String xRealIP = request.getHeaders().getFirst("X-Real-IP");
         if (xRealIP != null && !xRealIP.trim().isEmpty()) {
             return xRealIP.trim();
         }
-        
+
         // 직접 연결 주소
-        return request.getRemoteAddress() != null 
-            ? request.getRemoteAddress().getAddress().getHostAddress() 
+        return request.getRemoteAddress() != null
+            ? request.getRemoteAddress().getAddress().getHostAddress()
             : "unknown";
     }
 }

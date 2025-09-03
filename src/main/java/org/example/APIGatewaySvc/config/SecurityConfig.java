@@ -28,20 +28,15 @@ import java.util.Map;
 // import java.time.Duration; // not used
 
 /**
- * Spring Cloud Gateway Reactive Security 설정 클래스
- * OAuth2 Resource Server로서 Auth0에서 발급한 JWT 토큰을 검증하여 API Gateway 보안 제공
+ * Spring Cloud Gateway Reactive Security 설정 클래스 - 완전 비활성화
+ * NewSecurityConfig로 교체되어 더 이상 사용하지 않음
  *
- *
- *
- * 주요 기능:
- * - WebFlux 기반 Reactive JWT 토큰 검증
- * - Auth0 JWKS 엔드포인트를 통한 JWT 서명 검증
- * - Audience(오디언스) 검증을 통한 토큰 적합성 확인
- * - 공개 엔드포인트 설정 (/public/**, /actuator/**)
- * - 표준 HTTP 상태 코드 에러 응답
+ * 이 클래스는 OAuth2 Resource Server를 사용하여 JWT 검증을 중복으로 수행하는 문제를 방지하기 위해
+ * 완전히 비활성화되었습니다. 현재는 CustomJwtAuthenticationFilter를 사용하는 NewSecurityConfig만 활성화됩니다.
  */
-//@Configuration  // 새로운 NewSecurityConfig 사용으로 비활성화
-//@EnableWebFluxSecurity
+// 완전 비활성화 - NewSecurityConfig 사용으로 인해 JWT 중복 검증 방지
+// @Configuration
+// @EnableWebFluxSecurity
 public class SecurityConfig {
 
     // Auth0 API Identifier를 audience로 직접 설정 (Client ID도 허용)
@@ -68,12 +63,10 @@ public class SecurityConfig {
     }
 
     /**
-     * Spring Security WebFlux 필터 체인 설정
-     * - JWT 기반 인증을 위한 OAuth2 Resource Server 설정
-     * - 공개 경로와 보호된 경로 구분
-     * - Stateless 인증 (세션 비활성화)
+     * Spring Security WebFlux 필터 체인 설정 - 비활성화
+     * NewSecurityConfig로 교체되어 더 이상 사용하지 않음
      */
-    @Bean
+    // @Bean  // JWT 중복 검증 방지를 위해 비활성화
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         return http
                 // CSRF 비활성화 (JWT 토큰 기반 인증 사용)
@@ -140,6 +133,8 @@ public class SecurityConfig {
                                 // Gateway API 경로들 - OAuth2 세션 인증으로 임시 변경
                                 // HEAD 요청은 허용 (브라우저 preflight 및 존재 여부 확인용)
                                 .pathMatchers(HttpMethod.HEAD, "/gateway/users/**").permitAll()
+                                // 로그인 관련 엔드포인트는 인증 없이 접근 허용
+                                .pathMatchers("/gateway/users/api/auth/login", "/gateway/users/api/auth/register").permitAll()
                                 .pathMatchers("/gateway/users/**").authenticated()
                                 .pathMatchers("/gateway/apimgmt/**").authenticated()
                                 .pathMatchers("/gateway/customapi/**").authenticated()
@@ -278,14 +273,10 @@ public class SecurityConfig {
     }
 
     /**
-     * Reactive JWT Decoder 설정 (Auth0용)
-     * - Auth0 JWKS 엔드포인트에서 공개키를 가져와 JWT 서명 검증
-     * - Audience 검증을 통한 토큰 적합성 확인
-     * - 네트워크 타임아웃 및 캐시 설정으로 성능 최적화
-     * 
-     * @return ReactiveJwtDecoder JWT 토큰 디코더
+     * Reactive JWT Decoder 설정 - 비활성화
+     * NewSecurityConfig로 교체되어 더 이상 사용하지 않음
      */
-    @Bean
+    // @Bean  // JWT 중복 검증 방지를 위해 비활성화
     public ReactiveJwtDecoder reactiveJwtDecoder() {
         // issuer 포맷 보정: 끝의 슬래시 보장
         String normalizedIssuer = issuer.endsWith("/") ? issuer : issuer + "/";
@@ -313,13 +304,10 @@ public class SecurityConfig {
     }
 
     /**
-     * JWT 토큰을 Spring Security Authentication 객체로 변환하는 컨버터
-     * - JWT의 permissions 클레임만을 Spring Security 권한으로 매핑
-     * - 역할 기반 권한은 User Service에서 처리
-     * 
-     * @return ReactiveJwtAuthenticationConverter JWT 인증 변환기
+     * JWT 토큰 인증 컨버터 - 비활성화
+     * NewSecurityConfig로 교체되어 더 이상 사용하지 않음
      */
-    @Bean
+    // @Bean  // JWT 중복 검증 방지를 위해 비활성화
     public ReactiveJwtAuthenticationConverter reactiveJwtAuthenticationConverter() {
         // permissions -> as-is
         JwtGrantedAuthoritiesConverter permissionsConverter = new JwtGrantedAuthoritiesConverter();

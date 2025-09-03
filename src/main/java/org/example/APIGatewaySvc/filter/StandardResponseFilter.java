@@ -30,17 +30,17 @@ import java.util.UUID;
 
 /**
  * API Gateway 성공/예상 표준 응답 처리 필터
- * 
+ *
  * 다운스트림 서비스로부터 받은 응답을 StandardResponse 형식으로 래핑하여
  * 클라이언트에게 일관된 형식으로 전달
- * 
+ *
  * 주요 기능:
  * - 성공 응답을 StandardResponse로 래핑
  * - 에러 응답을 ErrorCodeMapper를 통해 비즈니스 코드로 변환
  * - X-Request-ID 헤더 추가 및 메타데이터 포함
  * - 요청 처리 시간 계산 (durationMs)
  * - 바이너리 응답은 래핑하지 않고 통과
- * 
+ *
  * 적용 대상:
  * - /gateway/** 경로의 모든 마이크로서비스 응답
  * - Content-Type이 application/json인 응답만 래핑
@@ -61,7 +61,7 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
             // 요청 시작 시간 기록
             Instant startTime = Instant.now();
             String requestId = generateRequestId();
-            
+
             // X-Request-ID 헤더를 요청에 추가 (다운스트림으로 전파)
             exchange.getRequest().mutate()
                     .header("X-Request-ID", requestId)
@@ -81,7 +81,7 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
                 public Mono<Void> writeWith(org.reactivestreams.Publisher<? extends DataBuffer> body) {
                     if (body instanceof Flux) {
                         Flux<? extends DataBuffer> fluxBody = Flux.from(body);
-                        
+
                         return super.writeWith(fluxBody.buffer().flatMap(dataBuffers -> {
                             // 바이너리 콘텐츠 타입인 경우 래핑하지 않고 통과
                             if (isBinaryContent(originalResponse)) {
@@ -92,39 +92,39 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
                             // 응답 본문을 문자열로 변환
                             DataBuffer joinedBuffer = bufferFactory.join(dataBuffers);
                             String originalBody = "";
-                            
+
                             if (joinedBuffer.readableByteCount() > 0) {
                                 byte[] content = new byte[joinedBuffer.readableByteCount()];
                                 joinedBuffer.read(content);
                                 originalBody = new String(content, StandardCharsets.UTF_8);
                             }
                             DataBufferUtils.release(joinedBuffer);
-                            
+
                             // 응답 처리 시간 계산
                             Duration processingTime = Duration.between(startTime, Instant.now());
                             long durationMs = processingTime.toMillis();
-                            
+
                             // StandardResponse로 래핑
                             StandardResponseDTO<?> wrappedResponse = wrapResponse(
-                                    originalBody, 
-                                    originalResponse.getStatusCode(), 
-                                    requestId, 
+                                    originalBody,
+                                    originalResponse.getStatusCode(),
+                                    requestId,
                                     durationMs
                             );
-                            
+
                             try {
                                 // JSON으로 직렬화
                                 String wrappedJson = objectMapper.writeValueAsString(wrappedResponse);
-                                
+
                                 // 응답 헤더 설정
                                 originalResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);
                                 originalResponse.getHeaders().set("X-Request-ID", requestId);
                                 originalResponse.getHeaders().setContentLength(wrappedJson.length());
-                                
+
                                 // 새로운 응답 본문 생성
                                 DataBuffer buffer = bufferFactory.wrap(wrappedJson.getBytes(StandardCharsets.UTF_8));
                                 return Mono.just(buffer);
-                                
+
                             } catch (JsonProcessingException e) {
                                 // JSON 직렬화 실패 시 에러 응답 생성
                                 return createErrorResponse(bufferFactory, requestId, durationMs);
@@ -144,7 +144,7 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
      */
     private boolean shouldSkipWrapping(ServerWebExchange exchange) {
         String path = exchange.getRequest().getPath().pathWithinApplication().value();
-        
+
         // 이미 래핑된 응답이거나 특정 경로는 제외
         return path.startsWith("/auth/") ||
                path.startsWith("/public/") ||
@@ -163,13 +163,13 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
         if (contentType == null) {
             return false;
         }
-        
+
         // 바이너리 MIME 타입 목록
         List<String> binaryTypes = List.of(
-                "image/", "video/", "audio/", "application/pdf", 
+                "image/", "video/", "audio/", "application/pdf",
                 "application/zip", "application/octet-stream"
         );
-        
+
         String contentTypeString = contentType.toString();
         return binaryTypes.stream().anyMatch(contentTypeString::startsWith);
     }
@@ -179,23 +179,23 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
      */
     private StandardResponseDTO<?> wrapResponse(String originalBody, HttpStatusCode statusCode, String requestId, long durationMs) {
         Map<String, Object> meta = createMetadata(requestId, durationMs);
-        
+
         if (ErrorCodeMapper.isSuccessStatus(statusCode)) {
             // 성공 응답 래핑
             Object data = parseJsonSafely(originalBody);
             return StandardResponseDTO.success("SUCCESS", "요청이 성공적으로 처리되었습니다", data, meta);
-            
+
         } else {
             // 에러 응답 래핑
             String errorCode = ErrorCodeMapper.mapToErrorCode(statusCode);
             String userMessage = ErrorCodeMapper.mapToUserMessage(statusCode);
             String errorType = ErrorCodeMapper.mapToErrorType(errorCode);
-            
+
             // 원본 에러 응답 파싱 시도
             Map<String, Object> errorDetails = new HashMap<>();
             errorDetails.put("httpStatus", statusCode.value());
             errorDetails.put("originalResponse", originalBody);
-            
+
             ErrorDetailsDTO error = new ErrorDetailsDTO(errorType, errorDetails, requestId);
             return StandardResponseDTO.error(errorCode, userMessage, error, meta);
         }
@@ -208,7 +208,7 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
         if (jsonString == null || jsonString.trim().isEmpty()) {
             return null;
         }
-        
+
         try {
             JsonNode jsonNode = objectMapper.readTree(jsonString);
             if (jsonNode.isObject()) {
@@ -250,15 +250,15 @@ public class StandardResponseFilter extends AbstractGatewayFilterFactory<Standar
         Map<String, Object> meta = createMetadata(requestId, durationMs);
         Map<String, Object> errorDetails = new HashMap<>();
         errorDetails.put("reason", "Response serialization failed");
-        
+
         ErrorDetailsDTO error = new ErrorDetailsDTO("INFRASTRUCTURE", errorDetails, requestId);
         StandardResponseDTO<?> errorResponse = StandardResponseDTO.error(
-                "GATEWAY_ERROR", 
-                "게이트웨이에서 응답 처리 중 오류가 발생했습니다", 
-                error, 
+                "GATEWAY_ERROR",
+                "게이트웨이에서 응답 처리 중 오류가 발생했습니다",
+                error,
                 meta
         );
-        
+
         try {
             String errorJson = objectMapper.writeValueAsString(errorResponse);
             return Mono.just(bufferFactory.wrap(errorJson.getBytes(StandardCharsets.UTF_8)));

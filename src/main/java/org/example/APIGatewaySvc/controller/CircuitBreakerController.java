@@ -33,7 +33,7 @@ public class CircuitBreakerController {
     @ApiResponse(responseCode = "200", description = "서킷브레이커 상태 조회 성공")
     public ResponseEntity<Map<String, Object>> getAllCircuitBreakerStatus() {
         Map<String, Object> allStatus = new HashMap<>();
-        
+
         Map<String, Object> circuitBreakers = circuitBreakerRegistry.getAllCircuitBreakers()
             .stream()
             .collect(Collectors.toMap(
@@ -67,7 +67,7 @@ public class CircuitBreakerController {
     @ApiResponse(responseCode = "404", description = "해당 이름의 서킷브레이커를 찾을 수 없음")
     public ResponseEntity<Map<String, Object>> getCircuitBreakerStatus(
             @PathVariable @Parameter(description = "서킷브레이커 이름") String name) {
-        
+
         try {
             CircuitBreaker circuitBreaker = circuitBreakerRegistry.circuitBreaker(name);
             Map<String, Object> status = getCircuitBreakerDetails(circuitBreaker);
@@ -77,7 +77,7 @@ public class CircuitBreakerController {
             Map<String, Object> error = new HashMap<>();
             error.put("error", "Circuit breaker not found");
             error.put("name", name);
-            error.put("availableCircuitBreakers", 
+            error.put("availableCircuitBreakers",
                 circuitBreakerRegistry.getAllCircuitBreakers().stream()
                     .map(CircuitBreaker::getName)
                     .collect(Collectors.toSet()));
@@ -87,10 +87,10 @@ public class CircuitBreakerController {
 
     private Map<String, Object> getCircuitBreakerDetails(CircuitBreaker circuitBreaker) {
         Map<String, Object> details = new HashMap<>();
-        
+
         details.put("name", circuitBreaker.getName());
         details.put("state", circuitBreaker.getState().toString());
-        
+
         // 메트릭 정보
         CircuitBreaker.Metrics metrics = circuitBreaker.getMetrics();
         details.put("failureRate", metrics.getFailureRate());
@@ -99,7 +99,7 @@ public class CircuitBreakerController {
         details.put("numberOfFailedCalls", metrics.getNumberOfFailedCalls());
         details.put("numberOfSuccessfulCalls", metrics.getNumberOfSuccessfulCalls());
         details.put("numberOfSlowCalls", metrics.getNumberOfSlowCalls());
-        
+
         // 설정 정보
         try {
             var config = circuitBreaker.getCircuitBreakerConfig();
@@ -114,7 +114,7 @@ public class CircuitBreakerController {
             // 일부 설정 정보를 가져올 수 없는 경우 무시
             details.put("config", "Configuration details not available");
         }
-        
+
         return details;
     }
 }

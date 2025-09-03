@@ -29,8 +29,8 @@ import java.util.Optional;
  */
 @Component
 @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
-    name = "kafka.enabled", 
-    havingValue = "true", 
+    name = "kafka.enabled",
+    havingValue = "true",
     matchIfMissing = false
 )
 public class GatewayLoggingFilter implements GlobalFilter, Ordered {
@@ -39,7 +39,7 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
     private static final String REQUEST_ID_KEY = "requestId";
     private static final String START_TIME_KEY = "startTime";
     private static final String REQUEST_SIZE_KEY = "requestSize";
-    
+
     private final GatewayLogService logService;
 
     public GatewayLoggingFilter(GatewayLogService logService) {
@@ -51,11 +51,11 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
         // Request ID 생성 및 저장
         String requestId = extractOrGenerateRequestId(exchange);
         exchange.getAttributes().put(REQUEST_ID_KEY, requestId);
-        
+
         // 시작 시간 기록
         long startTime = Instant.now().toEpochMilli();
         exchange.getAttributes().put(START_TIME_KEY, startTime);
-        
+
         // 요청 크기 기록 (Content-Length 헤더에서)
         String contentLength = exchange.getRequest().getHeaders().getFirst("Content-Length");
         if (contentLength != null) {
@@ -98,19 +98,19 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
     private void logRequestStart(ServerWebExchange exchange, String requestId) {
         try {
             ServerHttpRequest request = exchange.getRequest();
-            
+
             // 클라이언트 IP 추출
             String clientIp = getClientIpAddress(exchange);
-            
+
             // 라우트 ID 추출
             String routeId = extractRouteId(exchange);
-            
+
             // 공개 API 이름 추출 (라우트 메타데이터에서)
             String publicApiName = extractPublicApiName(exchange);
-            
+
             // 헤더 정보 수집 (민감 정보는 서비스에서 마스킹)
             Map<String, String> headers = collectImportantHeaders(request);
-            
+
             // 사용자 ID 추출 (동기적 처리)
             String userId = null;
             try {
@@ -129,7 +129,7 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
                 logger.debug("Cannot extract user ID: {}", e.getMessage());
                 userId = null;
             }
-            
+
             // GatewayLogService를 통해 로그 전송
             logService.logRequestStart(
                 requestId,
@@ -143,7 +143,7 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
                 publicApiName,
                 headers
             );
-                
+
         } catch (Exception e) {
             logger.warn("Error logging request start: {}", e.getMessage());
         }
@@ -156,15 +156,15 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
         try {
             String requestId = (String) exchange.getAttributes().get(REQUEST_ID_KEY);
             Long startTime = (Long) exchange.getAttributes().get(START_TIME_KEY);
-            
+
             if (requestId != null && startTime != null) {
                 long durationMs = Instant.now().toEpochMilli() - startTime;
-                Integer status = exchange.getResponse().getStatusCode() != null ? 
+                Integer status = exchange.getResponse().getStatusCode() != null ?
                     exchange.getResponse().getStatusCode().value() : null;
-                
+
                 // 응답 크기 계산 (근사치)
                 Long responseSize = calculateResponseSize(exchange);
-                
+
                 logService.logRequestEnd(requestId, status, durationMs, responseSize);
             }
         } catch (Exception e) {
@@ -179,15 +179,15 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
         try {
             String requestId = (String) exchange.getAttributes().get(REQUEST_ID_KEY);
             Long startTime = (Long) exchange.getAttributes().get(START_TIME_KEY);
-            
+
             if (requestId != null && startTime != null) {
                 long durationMs = Instant.now().toEpochMilli() - startTime;
-                Integer status = exchange.getResponse().getStatusCode() != null ? 
+                Integer status = exchange.getResponse().getStatusCode() != null ?
                     exchange.getResponse().getStatusCode().value() : 500;
-                
+
                 String errorMessage = throwable.getMessage();
                 String errorType = throwable.getClass().getSimpleName();
-                
+
                 logService.logRequestError(requestId, status, durationMs, errorMessage, errorType);
             }
         } catch (Exception e) {
@@ -200,18 +200,18 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
      */
     private String getClientIpAddress(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
-        
+
         String xForwardedFor = request.getHeaders().getFirst("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.trim().isEmpty()) {
             return xForwardedFor.split(",")[0].trim();
         }
-        
+
         String xRealIp = request.getHeaders().getFirst("X-Real-IP");
         if (xRealIp != null && !xRealIp.trim().isEmpty()) {
             return xRealIp.trim();
         }
-        
-        return request.getRemoteAddress() != null ? 
+
+        return request.getRemoteAddress() != null ?
             request.getRemoteAddress().getAddress().getHostAddress() : "unknown";
     }
 
@@ -231,7 +231,7 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
     private String extractPublicApiName(ServerWebExchange exchange) {
         // 라우트 메타데이터나 경로를 기반으로 API 이름 추출
         String path = exchange.getRequest().getURI().getPath();
-        
+
         if (path.startsWith("/gateway/users")) {
             return "Users API";
         } else if (path.startsWith("/gateway/apimgmt")) {
@@ -251,7 +251,7 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
         } else if (path.startsWith("/admin")) {
             return "Admin API";
         }
-        
+
         return null;
     }
 
@@ -260,21 +260,21 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
      */
     private Map<String, String> collectImportantHeaders(ServerHttpRequest request) {
         Map<String, String> headers = new HashMap<>();
-        
+
         // 로깅에 필요한 주요 헤더들만 수집
         String[] importantHeaders = {
-            "authorization", "x-api-key", "user-agent", "referer", 
+            "authorization", "x-api-key", "user-agent", "referer",
             "content-type", "accept", "x-forwarded-for", "x-real-ip",
             "x-request-id", "origin", "host"
         };
-        
+
         for (String headerName : importantHeaders) {
             String value = request.getHeaders().getFirst(headerName);
             if (value != null) {
                 headers.put(headerName.toLowerCase(), value);
             }
         }
-        
+
         return headers;
     }
 
@@ -291,7 +291,7 @@ public class GatewayLoggingFilter implements GlobalFilter, Ordered {
                 // 무시
             }
         }
-        
+
         return null;
     }
 

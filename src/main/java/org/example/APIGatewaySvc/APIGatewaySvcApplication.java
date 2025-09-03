@@ -12,7 +12,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * - 애플리케이션 시작 시 필요한 빈들을 스캔하고 초기화
  * - 서블릿 컨테이너 내장 및 HTTP 서버 구동
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+    org.springframework.boot.autoconfigure.security.oauth2.resource.reactive.ReactiveOAuth2ResourceServerAutoConfiguration.class
+})
 public class APIGatewaySvcApplication {
 
     /**

@@ -91,6 +91,9 @@ public class NewSecurityConfig {
                     // HEAD 요청 허용
                     .pathMatchers(HttpMethod.HEAD, "/gateway/users/**").permitAll()
                     
+                    // 로그인/회원가입 관련 엔드포인트는 인증 불필요
+                    .pathMatchers("/gateway/users/api/auth/login", "/gateway/users/api/auth/register").permitAll()
+                    
                     // 모든 Gateway API는 인증 필요
                     .pathMatchers("/gateway/users/**").authenticated()
                     .pathMatchers("/gateway/apimgmt/**").authenticated()
@@ -106,9 +109,11 @@ public class NewSecurityConfig {
                 .addFilterBefore(customJwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 
                 // 기본 인증 방식 비활성화 (OAuth2 Resource Server 사용하지 않음)
+                // OAuth2 Resource Server를 완전히 비활성화 (커스텀 JWT 필터 사용)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
+                // OAuth2ResourceServer는 설정하지 않음 (자동 설정 비활성화)
                 
                 .build();
     }

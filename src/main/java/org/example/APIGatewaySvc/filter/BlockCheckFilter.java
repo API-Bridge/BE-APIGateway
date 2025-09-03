@@ -28,8 +28,8 @@ import java.util.UUID;
 // - 차단되지 않은 경우 다음 필터로 요청 전달
 @Component
 @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
-    name = "redis.enabled", 
-    havingValue = "true", 
+    name = "redis.enabled",
+    havingValue = "true",
     matchIfMissing = false
 )
 public class BlockCheckFilter implements GlobalFilter, Ordered {
@@ -42,13 +42,13 @@ public class BlockCheckFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        
+
         // 1. IP 추출 (X-Forwarded-For 헤더 고려)
         String ip = getClientIpAddress(exchange);
-        
+
         // 2. API 키 추출 (예시: 'X-Api-Key' 헤더)
         String apiKey = exchange.getRequest().getHeaders().getFirst("X-Api-Key");
-        
+
         // 3. 사용자 ID 추출 (JWT claim)
         Mono<String> userIdMono = ReactiveSecurityContextHolder.getContext()
                 .map(securityContext -> {
@@ -65,11 +65,11 @@ public class BlockCheckFilter implements GlobalFilter, Ordered {
         return userIdMono.flatMap(userId -> {
             // TTL 기반 차단 확인
             Mono<BlockInfo> ipBlockInfo = checkBlockWithTTL("blocked:ip:" + ip, "IP");
-            Mono<BlockInfo> apiKeyBlockInfo = apiKey != null ? 
-                checkBlockWithTTL("blocked:key:" + apiKey, "API_KEY") : 
+            Mono<BlockInfo> apiKeyBlockInfo = apiKey != null ?
+                checkBlockWithTTL("blocked:key:" + apiKey, "API_KEY") :
                 Mono.just(BlockInfo.notBlocked());
-            Mono<BlockInfo> userBlockInfo = !userId.isEmpty() ? 
-                checkBlockWithTTL("blocked:user:" + userId, "USER") : 
+            Mono<BlockInfo> userBlockInfo = !userId.isEmpty() ?
+                checkBlockWithTTL("blocked:user:" + userId, "USER") :
                 Mono.just(BlockInfo.notBlocked());
 
             return Mono.zip(ipBlockInfo, apiKeyBlockInfo, userBlockInfo)
@@ -77,13 +77,13 @@ public class BlockCheckFilter implements GlobalFilter, Ordered {
                     BlockInfo ipBlock = tuple.getT1();
                     BlockInfo apiKeyBlock = tuple.getT2();
                     BlockInfo userBlock = tuple.getT3();
-                    
+
                     // 차단된 것이 있는지 확인
                     BlockInfo blockedInfo = null;
                     if (ipBlock.isBlocked()) blockedInfo = ipBlock;
                     else if (apiKeyBlock.isBlocked()) blockedInfo = apiKeyBlock;
                     else if (userBlock.isBlocked()) blockedInfo = userBlock;
-                    
+
                     if (blockedInfo != null) {
                         return createBlockedResponse(exchange.getResponse(), blockedInfo);
                     }
@@ -97,13 +97,13 @@ public class BlockCheckFilter implements GlobalFilter, Ordered {
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
             return xForwardedFor.split(",")[0].trim();
         }
-        
+
         String xRealIp = exchange.getRequest().getHeaders().getFirst("X-Real-IP");
         if (xRealIp != null && !xRealIp.isEmpty()) {
             return xRealIp;
         }
-        
-        return exchange.getRequest().getRemoteAddress() != null ? 
+
+        return exchange.getRequest().getRemoteAddress() != null ?
             exchange.getRequest().getRemoteAddress().getAddress().getHostAddress() : "unknown";
     }
 
@@ -113,7 +113,7 @@ public class BlockCheckFilter implements GlobalFilter, Ordered {
                 if (!exists) {
                     return Mono.just(BlockInfo.notBlocked());
                 }
-                
+
                 // TTL 확인
                 return redisTemplate.getExpire(key)
                     .map(ttl -> {
@@ -134,18 +134,18 @@ public class BlockCheckFilter implements GlobalFilter, Ordered {
         private final String type;
         private final String reason;
         private final Instant expiresAt;
-        
+
         public BlockInfo(boolean blocked, String type, String reason, Instant expiresAt) {
             this.blocked = blocked;
             this.type = type;
             this.reason = reason;
             this.expiresAt = expiresAt;
         }
-        
+
         public static BlockInfo notBlocked() {
             return new BlockInfo(false, null, null, null);
         }
-        
+
         public boolean isBlocked() { return blocked; }
         public String getType() { return type; }
         public String getReason() { return reason; }
@@ -157,10 +157,10 @@ public class BlockCheckFilter implements GlobalFilter, Ordered {
         response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
 
         // 상세한 차단 정보를 포함한 JSON 응답 생성
-        String expiresAtStr = blockInfo.getExpiresAt() != null ? 
-            "\"" + blockInfo.getExpiresAt().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) + "\"" : 
+        String expiresAtStr = blockInfo.getExpiresAt() != null ?
+            "\"" + blockInfo.getExpiresAt().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME) + "\"" :
             "null";
-            
+
         String jsonResponse = String.format(
             "{\"success\":false,\"data\":null,\"error\":{\"code\":\"BLOCKED\",\"message\":\"%s\",\"details\":{\"type\":\"%s\",\"reason\":\"%s\",\"expiresAt\":%s}},\"meta\":{\"requestId\":\"%s\",\"timestamp\":\"%s\",\"durationMs\":0}}",
             blockInfo.getType() + " 차단됨",
@@ -170,7 +170,7 @@ public class BlockCheckFilter implements GlobalFilter, Ordered {
             UUID.randomUUID(),
             Instant.now().atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
         );
-        
+
         DataBuffer buffer = response.bufferFactory().wrap(jsonResponse.getBytes(StandardCharsets.UTF_8));
         return response.writeWith(Mono.just(buffer));
     }

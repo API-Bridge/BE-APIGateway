@@ -19,32 +19,32 @@ import java.util.Optional;
 /**
  * Rate Limit 헤더 추가 PostFilter
  * RedisRateLimiter의 상태를 읽어 응답에 Rate Limit 정보 헤더 추가
- * 
+ *
  * 추가되는 헤더:
  * - X-RateLimit-Limit: 허용되는 총 요청 수
- * - X-RateLimit-Remaining: 남은 요청 수  
+ * - X-RateLimit-Remaining: 남은 요청 수
  * - X-RateLimit-Reset: Rate Limit 재설정 시간 (Unix timestamp)
  */
 @Component
 @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
-    name = "redis.enabled", 
-    havingValue = "true", 
+    name = "redis.enabled",
+    havingValue = "true",
     matchIfMissing = false
 )
 public class RateLimitHeadersFilter implements GlobalFilter, Ordered {
     // GlobalFilter 인터페이스를 구현하여 모든 요청에 대해 필터링 수행
     private static final Logger logger = LoggerFactory.getLogger(RateLimitHeadersFilter.class);
-    
+
     // Rate Limit 헤더 상수
     private static final String RATE_LIMIT_HEADER = "X-RateLimit-Limit";
     private static final String RATE_LIMIT_REMAINING_HEADER = "X-RateLimit-Remaining";
     private static final String RATE_LIMIT_RESET_HEADER = "X-RateLimit-Reset";
-    
+
     // Redis 키 상수
     private static final String RATE_LIMIT_KEY_PREFIX = "request_rate_limiter.";
     private static final String TOKENS_KEY_SUFFIX = ".tokens";
     private static final String TIMESTAMP_KEY_SUFFIX = ".timestamp";
-    
+
     private final ReactiveRedisTemplate<String, String> redisTemplate;
 
     public RateLimitHeadersFilter(ReactiveRedisTemplate<String, String> redisTemplate) {
@@ -76,8 +76,8 @@ public class RateLimitHeadersFilter implements GlobalFilter, Ordered {
                     response.getHeaders().add(RATE_LIMIT_HEADER, String.valueOf(status.limit));
                     response.getHeaders().add(RATE_LIMIT_REMAINING_HEADER, String.valueOf(status.remaining));
                     response.getHeaders().add(RATE_LIMIT_RESET_HEADER, String.valueOf(status.resetTime));
-                    
-                    logger.debug("Added rate limit headers: limit={}, remaining={}, reset={}", 
+
+                    logger.debug("Added rate limit headers: limit={}, remaining={}, reset={}",
                         status.limit, status.remaining, status.resetTime);
                 })
                 .onErrorResume(error -> {
@@ -105,7 +105,7 @@ public class RateLimitHeadersFilter implements GlobalFilter, Ordered {
         // 대체 방법: 요청 정보로부터 키 생성
         String userId = extractUserId(exchange);
         String routeId = extractRouteId(exchange);
-        
+
         if (userId != null && routeId != null) {
             return routeId + "_" + userId;
         } else if (routeId != null) {
@@ -113,7 +113,7 @@ public class RateLimitHeadersFilter implements GlobalFilter, Ordered {
             String clientIp = getClientIpAddress(exchange);
             return routeId + "_" + clientIp;
         }
-        
+
         return null;
     }
 
@@ -150,13 +150,13 @@ public class RateLimitHeadersFilter implements GlobalFilter, Ordered {
         if (xForwardedFor != null && !xForwardedFor.trim().isEmpty()) {
             return xForwardedFor.split(",")[0].trim();
         }
-        
+
         String xRealIp = exchange.getRequest().getHeaders().getFirst("X-Real-IP");
         if (xRealIp != null && !xRealIp.trim().isEmpty()) {
             return xRealIp.trim();
         }
-        
-        return exchange.getRequest().getRemoteAddress() != null ? 
+
+        return exchange.getRequest().getRemoteAddress() != null ?
             exchange.getRequest().getRemoteAddress().getAddress().getHostAddress() : "unknown";
     }
 
@@ -174,14 +174,14 @@ public class RateLimitHeadersFilter implements GlobalFilter, Ordered {
         .map(tuple -> {
             String tokens = tuple.getT1();
             String timestamp = tuple.getT2();
-            
+
             int remaining = Integer.parseInt(tokens);
             long lastRefillTime = Long.parseLong(timestamp);
-            
+
             // 기본 설정값 사용 (실제로는 설정에서 읽어야 함)
             int limit = 20; // burst-capacity 값
             long resetTime = calculateResetTime(lastRefillTime);
-            
+
             return new RateLimitStatus(limit, Math.max(0, remaining), resetTime);
         })
         .onErrorReturn(new RateLimitStatus(20, 0, Instant.now().getEpochSecond() + 60));
@@ -194,14 +194,14 @@ public class RateLimitHeadersFilter implements GlobalFilter, Ordered {
         // 1분 간격으로 토큰 보충 가정
         long refillIntervalSeconds = 60;
         long currentTime = Instant.now().getEpochSecond();
-        
+
         if (lastRefillTime == 0) {
             return currentTime + refillIntervalSeconds;
         }
-        
+
         long timeSinceLastRefill = currentTime - lastRefillTime;
         long nextRefillIn = refillIntervalSeconds - (timeSinceLastRefill % refillIntervalSeconds);
-        
+
         return currentTime + nextRefillIn;
     }
 
@@ -216,7 +216,7 @@ public class RateLimitHeadersFilter implements GlobalFilter, Ordered {
      */
     private static class RateLimitStatus {
         final int limit;
-        final int remaining;  
+        final int remaining;
         final long resetTime;
 
         RateLimitStatus(int limit, int remaining, long resetTime) {
