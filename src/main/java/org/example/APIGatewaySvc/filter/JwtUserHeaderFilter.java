@@ -42,86 +42,80 @@ public class JwtUserHeaderFilter extends AbstractGatewayFilterFactory<JwtUserHea
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            return ReactiveSecurityContextHolder.getContext()
-                .cast(org.springframework.security.core.context.SecurityContext.class)
-                .flatMap(securityContext -> {
-                    Authentication authentication = securityContext.getAuthentication();
-                    
-                    if (authentication == null || !authentication.isAuthenticated()) {
-                        log.debug("인증되지 않은 요청 - 헤더 추가 생략");
-                        return chain.filter(exchange);
-                    }
-                    
-                    // JWT 토큰 추출
-                    Jwt jwt = jwtRoleUtils.extractJwtFromAuthentication(authentication);
-                    if (jwt == null) {
-                        log.debug("JWT 토큰이 없음 - 헤더 추가 생략");
-                        return chain.filter(exchange);
-                    }
-                    
-                    try {
-                        // JWT에서 사용자 정보 추출
-                        String userId = jwtRoleUtils.extractAuth0Id(jwt);
-                        String userEmail = jwtRoleUtils.extractEmail(jwt);
-                        List<String> permissions = jwtRoleUtils.extractPermissions(jwt);
-                        
-                        log.debug("JWT에서 추출한 사용자 정보 - userId: {}, email: {}, permissions: {}", 
-                                userId, userEmail, permissions);
-                        
-                        // 요청에 사용자 정보 헤더 추가
-                        ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
-                        
-                        // 필수 헤더: X-User-Id (사용자 식별용)
-                        if (userId != null && !userId.trim().isEmpty()) {
-                            requestBuilder.header("X-User-Id", userId);
-                            log.debug("X-User-Id 헤더 추가: {}", userId);
-                        }
-                        
-                        // 선택적 헤더: X-User-Email
-                        if (userEmail != null && !userEmail.trim().isEmpty()) {
-                            requestBuilder.header("X-User-Email", userEmail);
-                            log.debug("X-User-Email 헤더 추가: {}", userEmail);
-                        }
-                        
-                        // 권한 관련 헤더
-                        if (permissions != null && !permissions.isEmpty()) {
-                            // X-User-Role: 첫 번째 권한을 주 역할로 설정
-                            String primaryRole = extractPrimaryRole(permissions);
-                            if (primaryRole != null) {
-                                requestBuilder.header("X-User-Role", primaryRole);
-                                log.debug("X-User-Role 헤더 추가: {}", primaryRole);
-                            }
-                            
-                            // X-User-Roles: 모든 역할을 쉼표로 구분
-                            String roles = extractRoles(permissions);
-                            if (roles != null && !roles.trim().isEmpty()) {
-                                requestBuilder.header("X-User-Roles", roles);
-                                log.debug("X-User-Roles 헤더 추가: {}", roles);
-                            }
-                            
-                            // X-User-Permissions: 모든 권한을 쉼표로 구분
-                            String permissionsStr = String.join(",", permissions);
-                            requestBuilder.header("X-User-Permissions", permissionsStr);
-                            log.debug("X-User-Permissions 헤더 추가: {}", permissionsStr);
-                        }
-                        
-                        // 수정된 요청으로 계속 진행
-                        ServerHttpRequest modifiedRequest = requestBuilder.build();
-                        ServerWebExchange modifiedExchange = exchange.mutate().request(modifiedRequest).build();
-                        
-                        return chain.filter(modifiedExchange);
-                        
-                    } catch (Exception e) {
-                        log.error("JWT 사용자 헤더 생성 중 오류 발생: {}", e.getMessage(), e);
-                        // 오류가 발생해도 요청은 계속 진행
-                        return chain.filter(exchange);
-                    }
-                })
-                .switchIfEmpty(Mono.defer(() -> {
-                    log.debug("Security Context가 없음 - 헤더 추가 생략");
+            // Authorization 헤더에서 직접 JWT 토큰 추출
+            String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+            
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                log.debug("Authorization 헤더가 없음 - 헤더 추가 생략");
+                return chain.filter(exchange);
+            }
+            
+            String token = authHeader.substring(7).trim();
+            
+            try {
+                // JWT 토큰을 직접 파싱해서 사용자 정보 추출
+                String[] parts = token.split("\\.");
+                if (parts.length != 3) {
+                    log.debug("유효하지 않은 JWT 형식 - 헤더 추가 생략");
                     return chain.filter(exchange);
-                }));
+                }
+                
+                // JWT payload 디코딩
+                String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
+                
+                // JSON에서 사용자 정보 추출
+                String userId = extractFromJson(payload, "sub");
+                String userEmail = extractFromJson(payload, "email");
+                
+                log.debug("JWT에서 추출한 사용자 정보 - userId: {}, email: {}", userId, userEmail);
+                
+                // 요청에 사용자 정보 헤더 추가
+                ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
+                
+                // 필수 헤더: X-User-Id (사용자 식별용)
+                if (userId != null && !userId.trim().isEmpty()) {
+                    requestBuilder.header("X-User-Id", userId);
+                    log.debug("X-User-Id 헤더 추가: {}", userId);
+                }
+                
+                // 선택적 헤더: X-User-Email
+                if (userEmail != null && !userEmail.trim().isEmpty()) {
+                    requestBuilder.header("X-User-Email", userEmail);
+                    log.debug("X-User-Email 헤더 추가: {}", userEmail);
+                }
+                
+                // 수정된 요청으로 계속 진행
+                ServerHttpRequest modifiedRequest = requestBuilder.build();
+                ServerWebExchange modifiedExchange = exchange.mutate().request(modifiedRequest).build();
+                
+                return chain.filter(modifiedExchange);
+                
+            } catch (Exception e) {
+                log.error("JWT 사용자 헤더 생성 중 오류 발생: {}", e.getMessage(), e);
+                // 오류가 발생해도 요청은 계속 진행
+                return chain.filter(exchange);
+            }
         };
+    }
+    
+    /**
+     * JSON 문자열에서 특정 필드 값을 추출합니다
+     */
+    private String extractFromJson(String json, String field) {
+        try {
+            String searchPattern = "\"" + field + "\"\\s*:\\s*\"([^\"]+)\"";
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(searchPattern);
+            java.util.regex.Matcher matcher = pattern.matcher(json);
+            
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+            
+            return null;
+        } catch (Exception e) {
+            log.error("JSON에서 필드 '{}' 추출 실패: {}", field, e.getMessage());
+            return null;
+        }
     }
     
     /**

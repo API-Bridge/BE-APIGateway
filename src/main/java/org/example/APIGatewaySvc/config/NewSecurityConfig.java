@@ -40,7 +40,10 @@ public class NewSecurityConfig {
                     org.springframework.web.cors.CorsConfiguration configuration = 
                         new org.springframework.web.cors.CorsConfiguration();
                     configuration.setAllowCredentials(true);
-                    configuration.addAllowedOriginPattern("*");
+                    // 특정 origin 명시적 허용 (credentials=true일 때 *는 불가)
+                    configuration.addAllowedOrigin("http://localhost:9002");
+                    configuration.addAllowedOrigin("http://localhost:3000");
+                    configuration.addAllowedOrigin("http://localhost:8080");
                     configuration.addAllowedHeader("*");
                     configuration.addAllowedMethod("*");
                     return configuration;
@@ -50,9 +53,9 @@ public class NewSecurityConfig {
                 
                 // 경로별 인증 설정
                 .authorizeExchange(exchanges -> exchanges
-                    // 완전 공개 경로 (인증 불필요)
+                    // Actuator 경로는 최우선으로 permitAll
+                    .pathMatchers("/actuator/**").permitAll()
                     .pathMatchers(HttpMethod.GET, "/", "/favicon.ico").permitAll()
-                    .pathMatchers("/actuator/health", "/actuator/info").permitAll()
                     .pathMatchers("/public/**").permitAll()
                     .pathMatchers("/swagger-ui/**", "/swagger-ui.html").permitAll()
                     .pathMatchers("/v3/api-docs/**", "/v3/api-docs").permitAll()
@@ -77,11 +80,6 @@ public class NewSecurityConfig {
                     .pathMatchers(HttpMethod.GET, "/gateway/sysmgmt/v3/api-docs").permitAll()
                     .pathMatchers(HttpMethod.GET, "/gateway/sysmgmt/v3/api-docs/swagger-config").permitAll()
                     
-                    // Actuator 엔드포인트
-                    .pathMatchers("/actuator/metrics", "/actuator/metrics/**").permitAll()
-                    .pathMatchers("/actuator/prometheus").permitAll()
-                    .pathMatchers("/actuator/gateway", "/actuator/gateway/**").permitAll()
-                    .pathMatchers("/actuator/circuitbreakers", "/actuator/circuitbreakers/**").permitAll()
                     
                     // 테스트/개발 경로
                     .pathMatchers("/test/**", "/mock/**").permitAll()
@@ -91,8 +89,9 @@ public class NewSecurityConfig {
                     // HEAD 요청 허용
                     .pathMatchers(HttpMethod.HEAD, "/gateway/users/**").permitAll()
                     
-                    // 로그인/회원가입 관련 엔드포인트는 인증 불필요
+                    // 로그인/회원가입 관련 엔드포인트는 인증 불필요 (더 구체적인 경로를 먼저 배치)
                     .pathMatchers("/gateway/users/api/auth/login", "/gateway/users/api/auth/register").permitAll()
+                    .pathMatchers("/gateway/users/api/auth/**").permitAll()  // 추가 인증 관련 경로들
                     
                     // 모든 Gateway API는 인증 필요
                     .pathMatchers("/gateway/users/**").authenticated()
@@ -105,7 +104,7 @@ public class NewSecurityConfig {
                     .anyExchange().authenticated()
                 )
                 
-                // 커스텀 JWT 필터 추가
+                // 커스텀 JWT 필터 추가 (Authentication 전에 배치하여 우선 실행)
                 .addFilterBefore(customJwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 
                 // 기본 인증 방식 비활성화 (OAuth2 Resource Server 사용하지 않음)
@@ -114,6 +113,29 @@ public class NewSecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
                 // OAuth2ResourceServer는 설정하지 않음 (자동 설정 비활성화)
+                
+                // 인증 실패 시 JSON 응답 반환 (브라우저 기본 인증 창 비활성화)
+                .exceptionHandling(exceptions -> exceptions
+                    .authenticationEntryPoint((exchange, ex) -> {
+                        exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
+                        exchange.getResponse().getHeaders().add("Content-Type", "application/json");
+                        String errorMessage = """
+                            {
+                                "error": "Unauthorized",
+                                "message": "JWT token required. Please provide a valid Bearer token.",
+                                "status": 401,
+                                "timestamp": "%s",
+                                "path": "%s"
+                            }
+                            """.formatted(
+                                java.time.Instant.now().toString(),
+                                exchange.getRequest().getURI().getPath()
+                            );
+                        org.springframework.core.io.buffer.DataBuffer buffer = 
+                            exchange.getResponse().bufferFactory().wrap(errorMessage.getBytes());
+                        return exchange.getResponse().writeWith(reactor.core.publisher.Mono.just(buffer));
+                    })
+                )
                 
                 .build();
     }

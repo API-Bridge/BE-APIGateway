@@ -39,7 +39,8 @@
       "Bash(git rm:*)",
       "Bash(.\\gradlew.bat compileJava:*)",
       "Bash(docker run:*)",
-      "Read(C:\\workspace\\BE-UserService/**)"
+      "Read(C:\\workspace\\BE-UserService/**)",
+      "Bash(lsof:*)"
     ],
     "deny": [],
     "additionalDirectories": [

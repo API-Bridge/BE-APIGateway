@@ -57,6 +57,9 @@ dependencies {
     
     // JSON processing
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    
+    // ELK Logging - JSON structured logging for Docker environments
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 
     // Load environment variables from .env files
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'

@@ -41,6 +41,19 @@ public class CustomJwtAuthenticationFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
 
+        // Actuator 경로는 완전히 건너뛰기 (로그 없이)
+        if (path.startsWith("/actuator/")) {
+            return chain.filter(exchange);
+        }
+
+        // 이미 이 필터를 통과한 요청인지 확인 (무한 루프 방지)
+        if (exchange.getAttribute("CustomJwtFilter.processed") != null) {
+            return chain.filter(exchange);
+        }
+        
+        // 필터 처리 표시
+        exchange.getAttributes().put("CustomJwtFilter.processed", true);
+
         System.out.println("=== CustomJwtAuthenticationFilter 시작 ===");
         System.out.println("경로: " + path);
         System.out.println("메서드: " + exchange.getRequest().getMethod());
@@ -88,6 +101,9 @@ public class CustomJwtAuthenticationFilter implements WebFilter {
                                                     .header("X-JWT-Validated", "true")
                                                     .build())
                                             .build();
+
+                                    System.out.println("인증 성공 - Security Context에 인증 정보 설정: " + authentication.getName());
+                                    System.out.println("인증 권한: " + authentication.getAuthorities());
 
                                     return chain.filter(modifiedExchange)
                                             .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));

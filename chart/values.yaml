@@ -2,9 +2,9 @@
 replicaCount: 2
 
 image:
-  repository: api-gateway
-  pullPolicy: IfNotPresent
-  tag: ""
+  repository: 465516136472.dkr.ecr.ap-southeast-2.amazonaws.com/api-bridge/api-gateway  # Update with your ECR repository URI
+  pullPolicy: Always
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -36,15 +36,24 @@ service:
   targetPort: 8080
 
 ingress:
-  enabled: false
-  className: ""
-  annotations: {}
+  enabled: true
+  className: "alb"  # AWS Load Balancer Controller
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
   hosts:
-    - host: api-gateway.local
+    - host: api-gateway.your-domain.com  # Update with your domain
       paths:
         - path: /
           pathType: Prefix
-  tls: []
+  tls:
+    - hosts:
+        - api-gateway.your-domain.com
+      secretName: api-gateway-tls
 
 resources:
   limits:
@@ -61,7 +70,8 @@ autoscaling:
   targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 80
 
-nodeSelector: {}
+nodeSelector:
+  kubernetes.io/arch: amd64  # EKS node architecture
 
 tolerations: []
 
@@ -77,6 +87,18 @@ affinity:
             values:
             - api-gateway
         topologyKey: kubernetes.io/hostname
+  nodeAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      preference:
+        matchExpressions:
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values:
+          - t3.medium
+          - t3.large
+          - m5.large
+          - m5.xlarge
 
 # Application configuration
 config:
@@ -102,15 +124,15 @@ config:
             issuer-uri: https://api-bridge.us.auth0.com/
             audience: http://api-gateway:8080/
 
-# External dependencies
+# External dependencies - EKS managed services
 redis:
   enabled: true
-  host: redis-service
+  host: your-elasticache-redis.cache.amazonaws.com  # Update with ElastiCache endpoint
   port: 6379
 
 kafka:
   enabled: true
-  bootstrapServers: kafka-service:9092
+  bootstrapServers: your-msk-cluster.kafka.region.amazonaws.com:9092  # Update with MSK endpoint
 
 # Service mesh / routing configuration
 gateway:

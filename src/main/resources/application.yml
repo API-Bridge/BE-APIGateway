@@ -18,7 +18,7 @@ spring:
   application:
     name: api-gateway
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
   main:
     allow-circular-references: true
     # WebFlux 환경에서 Actuator 활성화
@@ -59,7 +59,7 @@ spring:
   data:
     redis:
       host: ${SPRING_REDIS_HOST:localhost}
-      port: ${SPRING_REDIS_PORT:6379}
+      port: ${SPRING_REDIS_PORT:6380}
       timeout: 5000ms
       connect-timeout: 5000ms
       lettuce:
@@ -132,7 +132,7 @@ spring:
         # *** User operations under auth path - specific routes first ***
         # /auth/users/** 경로를 /api/users/** 로 라우팅 (JWT 검증 필요)
         - id: auth-users-routes
-          uri: http://localhost:8081
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/auth/users/**
           filters:
@@ -149,7 +149,7 @@ spring:
         # *** 새로 추가된 라우트: Auth0 인증 경로 (토큰 검증 없음) ***
         # /auth/** 경로는 토큰 검증 없이 User Service로 라우팅 (users는 별도 처리)
         - id: auth-routes-public
-          uri: http://localhost:8081
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/auth/login,/auth/login-success,/auth/login-error,/auth/user-info,/auth/logout,/auth/logout-success,/auth/config
           filters:
@@ -166,7 +166,7 @@ spring:
 
         # OAuth2 경로를 User Service로 라우팅 (Auth0 OAuth2 처리)
         - id: oauth2-routes-public
-          uri: http://localhost:8081
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/oauth2/**
           filters:
@@ -178,7 +178,7 @@ spring:
 
         # OAuth2 콜백 경로를 User Service로 라우팅 (Auth0 콜백 처리)
         - id: oauth2-callback-routes-public
-          uri: http://localhost:8081
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/login/oauth2/code/**
           filters:
@@ -190,7 +190,7 @@ spring:
 
         # User Service - 관리자 전용 경로
         - id: user-service-admin
-          uri: http://localhost:8081
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/gateway/users/admin/** # Method Predicate를 제거하여 모든 메서드 허용
           filters:
@@ -205,7 +205,7 @@ spring:
 
         # User Service - GET, POST, PUT, DELETE, HEAD 요청
         - id: user-service
-          uri: http://localhost:8081
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/gateway/users/** # Method Predicate를 제거하여 모든 메서드 허용
           filters:
@@ -221,7 +221,7 @@ spring:
 
         # Admin Service - 관리자 전용 경로
         - id: admin-service
-          uri: http://localhost:8081
+          uri: ${USER_SERVICE_URL:http://localhost:8081}
           predicates:
             - Path=/gateway/admin/**
           filters:
@@ -403,3 +403,50 @@ management:
       enabled: true
     circuitbreakers:
       enabled: true
+
+# =================================================================
+#                 Docker 환경 설정 (ELK 연동)
+# =================================================================
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6380}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+
+# Elasticsearch 설정 (ELK 스택 연동)
+elasticsearch:
+  host: ${ELASTICSEARCH_HOST:elasticsearch}
+  port: ${ELASTICSEARCH_PORT:9200}
+
+# Docker 환경에서의 서비스 URL 설정
+spring.cloud.gateway:
+  routes:
+    # User Service (Docker)
+    - id: user-service-docker
+      uri: ${USER_SERVICE_URL:http://user-service:8081}
+      predicates:
+        - Path=/gateway/users/**
+      filters:
+        - StripPrefix=2
+        - AddRequestHeader=X-Gateway-Source, api-gateway-docker
+    
+    # API Management Service (Docker)
+    - id: api-management-service-docker
+      uri: ${API_MGMT_SERVICE_URL:http://api-management-service:8082}
+      predicates:
+        - Path=/gateway/apimgmt/**
+      filters:
+        - StripPrefix=2
+        - AddRequestHeader=X-Gateway-Source, api-gateway-docker
+
+logging:
+  level:
+    org.example.APIGatewaySvc: INFO
+    org.springframework.cloud.gateway: WARN
+    org.springframework.security: WARN
